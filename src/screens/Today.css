@@ -1,0 +1,193 @@
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.today-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+}
+
+.today-week {
+  text-align: left;
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  margin: calc(var(--s2) * -1) calc(var(--s3) * -1);
+  min-height: 44px;
+}
+
+.today-week-n {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 84;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--ember);
+  text-underline-offset: 4px;
+}
+
+.today-week-of {
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+}
+
+.today-block {
+  text-align: right;
+}
+
+.today-tag {
+  margin-top: var(--s1);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+/* --- what changed this week --------------------------------------------- */
+
+.today-intro {
+  display: block;
+  text-align: left;
+  width: 100%;
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ember);
+  border-radius: var(--r);
+  background: var(--ground-raised);
+}
+
+.today-intro.is-deload {
+  background: var(--ember-wash);
+}
+
+.today-intro-title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+  color: var(--chalk);
+  margin-top: var(--s1);
+}
+
+.today-intro-more {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+  margin-top: 2px;
+}
+
+/* --- the session card --------------------------------------------------- */
+
+.today-card {
+  background: var(--ground-raised);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  padding: var(--s5) var(--s4);
+}
+
+.today-name {
+  margin-top: var(--s2);
+}
+
+.today-focus {
+  margin-top: var(--s2);
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+}
+
+.today-list {
+  list-style: none;
+  margin-top: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.today-list-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: var(--t-md);
+  color: var(--chalk-dim);
+}
+
+.today-list-slot {
+  font-family: var(--font-display);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--chalk-faint);
+  min-width: 22px;
+}
+
+.today-meta {
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line-soft);
+  font-size: var(--t-sm);
+  color: var(--chalk-dim);
+}
+
+.today-done {
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+  text-align: center;
+}
+
+/* --- week picker -------------------------------------------------------- */
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s2);
+  margin-top: var(--s5);
+}
+
+.week-cell {
+  min-height: var(--touch-min);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ground-well);
+  padding: var(--s2);
+}
+
+.week-cell-n {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk-dim);
+}
+
+.week-cell-b {
+  display: block;
+  font-size: 11px;
+  color: var(--chalk-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.week-cell.is-deload .week-cell-b {
+  color: var(--ember);
+}
+
+.week-cell.is-on {
+  background: var(--chalk);
+  border-color: var(--chalk);
+}
+
+.week-cell.is-on .week-cell-n,
+.week-cell.is-on .week-cell-b {
+  color: var(--ground);
+}

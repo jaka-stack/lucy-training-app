@@ -157,6 +157,143 @@ only on her phone; the source PDF lives only on Jak's computer.
 
 ---
 
+## Phase 1 — first run, and all of Day 1
+
+### D11. localStorage, not IndexedDB — a reversal of the plan
+
+The plan said IndexedDB, reasoning that async writes never block the screen
+mid-set. In the code that turned out to be the wrong trade, so I changed it.
+
+The whole save file is a couple of kilobytes — a single session is about
+1.8 kB, so twelve weeks lands near 50 kB against a 5 MB limit. A write that
+small is far too fast to feel. And localStorage writes **synchronously**, which
+means a logged set is on disk before the next line of code runs. With IndexedDB
+there is a real window, however small, where she taps an effort button, the
+phone is killed, and the write never lands.
+
+For an app whose main job is not to lose her sets, that certainty is worth more
+than microseconds that nobody could perceive. Flagged rather than done quietly,
+because it contradicts what I said at plan stage.
+
+### D12. The engine is the single source of truth for "what am I doing today"
+
+Sets, rest, effort target, tempo, weights and block variations are all computed
+in one place (`src/state/engine.ts`) from the week number and her kit.
+
+**Why:** the alternative is each screen answering "how many sets is it this
+week" for itself, and the answers drifting apart. It also makes the programme
+logic testable without a browser, which is where the 80 automated checks come
+from.
+
+### D13. Weights are snapped to the rack she actually owns
+
+The PDF prescribes 15 kg for the goblet squat. Someone who owns 4, 8 and 12 kg
+gets 12 kg — the heaviest she owns that is not heavier than prescribed. If she
+owns nothing that light, she gets the lightest she has.
+
+**Why:** required — the app must never offer a weight she does not own. The
+programme's *intent* (start about here, progress from there) survives; only the
+number changes, and it has to, because the alternative is a number she cannot
+lift.
+
+**Once she has logged a set, what she actually lifted always wins** over what
+the page says. The prescription is a starting point, not a standing order.
+
+### D14. Substitutions when there is no bench
+
+| Programme exercise | Without a bench |
+|---|---|
+| Incline push-up (hands on bench) | Hands on a sofa arm, worktop or stair |
+| Seated shoulder press | Standing shoulder press |
+
+Each substitution states, in the app, that it is a swap and why. The standing
+press carries an explicit note that it may need a lighter dumbbell because you
+are holding yourself steady — so that a drop in weight reads as expected rather
+than as failure.
+
+**These are additions to the PDF**, which assumed one person's kit. Same
+movement pattern, same muscles, same place in the session.
+
+### D15. Substitutions when there is no bike
+
+The warm-up's 5-minute bike becomes "march, step-ups or a brisk walk"; the
+cool-down spin becomes easy walking; interval finishers become the same
+intervals on foot or stairs. The PDF already blesses this on its own bike page
+— it says walking counts, and that steps are "at least as good for fat loss and
+easier to sustain".
+
+### D16. Rest is taken after the last round of a pair too
+
+The PDF says "75 s, then back to A1", which describes rest *between* rounds and
+is silent about the gap between finishing one pair and starting the next.
+
+**Decision:** rest after every round, including the last one of a pair.
+
+**Why:** going straight from the last push-up of the A pair into a heavy
+Romanian deadlift with no pause is not what the programme intends, and no coach
+would run it that way. Low confidence that this is what the author meant, high
+confidence it is what the author would want. Flagged for Jak.
+
+### D17. Week 7 pauses the progression counter rather than resetting it
+
+Not yet implemented — the progression engine is Phase 3 — but recorded now
+because it falls out of this phase's work: the deload caps everything at
+RPE 5, so nobody can hit the top of a rep range at target effort. Treating that
+as a broken streak would punish her for following the plan. Week 7 will make
+the two-session counter neutral: it neither advances nor resets.
+
+The deload also drops the harder block-3 variations (the floor push-up
+progression, the 3-second lowering). Week 7 is "same exercises, roughly half
+the sets, nothing above RPE 5" — the harder variations belong to weeks 8-9.
+Covered by a test.
+
+### D18. The controls she touches never scroll
+
+The rep count, the weight chips and the effort buttons are pinned below the
+scrolling area. Only the information — exercise name, target, last time, and
+any note about what changed this block — can scroll.
+
+**Why:** found by testing, twice. First the effort buttons fell below the fold
+on a small phone; the fix was to pin them. Then in week 10 — four sets, plus a
+note about the new pause — the *weight chips* ended up hidden behind the pinned
+bar on a 375×812 screen. Shaving spacing would have failed again on the next
+screen or the next week's content. Pinning all three controls means the layout
+cannot be broken by content growing above it.
+
+### D19. Effort buttons commit; a 500 ms lock stops double taps
+
+Carried over from Phase 0 and now applied to the real logger. Five rapid taps
+advance exactly one set.
+
+### D20. She chooses which week she is on. The app never advances it
+
+There is a week picker; nothing moves her on automatically.
+
+**Why:** the PDF is explicit that a bad week should be repeated rather than
+pushed through, that days can move around the week, and that an extra deload
+costs nothing. An app that silently advanced the week would quietly contradict
+all three. It also means missing a week is not an event the app has an opinion
+about — she picks up where she wants to.
+
+### D21. What the summary screen does and does not say
+
+It lists what she did, and says plainly: "Nothing here is a score."
+
+**Why:** this is the natural place a fitness app would put a celebration, a
+total, a streak or a comparison. The PDF's tone is that logging exists to make
+the progression rule work, not to grade her. In the deload week the summary
+says the easy week was done *properly*, so week 7 cannot read as a bad week.
+
+### D22. A session with nothing logged is not recorded as a session
+
+If she starts, does the warm-up, and stops before the first set, that is
+discarded rather than saved as an empty session.
+
+**Why:** a list of "failed" sessions is exactly the kind of pressure this app
+is meant not to create. Nothing was trained, so there is nothing to record.
+
+---
+
 ## Open questions carried into Phase 1
 
 These were raised at plan stage and answered "pick what you think is best".

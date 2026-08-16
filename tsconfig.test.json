@@ -1,0 +1,14 @@
+{
+  // The tests run in Node, so they are typechecked with Node's types
+  // available. Kept separate from tsconfig.json so that Node APIs can never
+  // leak into the app itself by accident.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*.test.ts", "src/**/*.ts"],
+  "exclude": []
+}

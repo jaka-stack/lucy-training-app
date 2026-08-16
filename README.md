@@ -3,8 +3,8 @@
 A phone app built from the 12-week home dumbbell programme. It works offline,
 keeps everything on the phone, and needs no account.
 
-**Right now this is Phase 0** — one screen, to agree the look before the rest
-gets built. See [What's here so far](#whats-here-so-far).
+**Right now this is Phase 2 of 4** — first run and the whole of Day 1 work, for
+all twelve weeks. See [What's here so far](#whats-here-so-far).
 
 ---
 
@@ -83,19 +83,22 @@ lives in plain lists that read like the tables in the PDF.
 
 | To change… | Open this file |
 |---|---|
-| Colours, text sizes, spacing, the whole look | `src/styles/tokens.css` |
+| Exercises, sets, reps, starting weights | `src/data/programme.ts` |
+| What changes in each block, and in week 7 | `src/data/programme.ts` |
+| Form cues, common mistakes, no-bench swaps | `src/data/exercises.ts` |
+| The warm-up and cool-down lists | `src/data/exercises.ts` |
 | What a word like "superset" or "RPE" means | `src/data/glossary.ts` |
-| The session screen itself | `src/screens/SetLogger.tsx` |
+| Colours, text sizes, spacing, the whole look | `src/styles/tokens.css` |
+| The rules that decide today's session | `src/state/engine.ts` |
 
 In `tokens.css`, every colour and size the app uses is defined once at the top
 with a plain-English comment. Change a value there and it changes everywhere,
 consistently. That file is worth a read even if you change nothing — it explains
 the reasoning behind the design.
 
-**From Phase 1 onward** the exercises, sets, reps, rest times and block changes
-move into their own file (`src/data/programme.ts`), written to look as much like
-the PDF's tables as possible, so changing a rep range means editing one obvious
-line.
+`programme.ts` is written to look as much like the PDF's tables as possible, so
+changing a rep range means editing one obvious line. If you change something the
+programme depends on, `npm test` will tell you.
 
 After any change, the browser updates by itself while `npm run dev` is running.
 
@@ -103,36 +106,56 @@ After any change, the browser updates by itself while `npm run dev` is running.
 
 ## What's here so far
 
-**Phase 0: one screen** — the set logger, which is the screen she will see more
-than any other. It shows the A-pair of Day 1 in week 3: goblet squat straight
-into incline push-ups, no rest between them, then a 90-second rest, then round
-again, three times.
+**Day 1 works completely**, for any of the twelve weeks, adapted to whatever kit
+you tell it you have.
+
+The first time you open it, it asks three questions — which dumbbells, whether
+you have a bench, whether you have a bike — and then builds every session around
+the answers. Then a session runs start to finish: warm-up, the three pairs of
+exercises, the bike finisher, the cool-down, and a summary.
 
 Things worth trying:
 
 - **Tap an effort button.** That logs the set — there is no separate save step.
-  Reps and weight are already filled in from last week, so the normal case is one
-  tap.
-- **Notice it goes straight to the push-ups** with no rest, then rests after
-  those. That is what a superset is, and the app just does it rather than
-  explaining it.
-- **Tap the exercise name.** The form cue and the usual mistake, at the moment
-  you would want them.
-- **Tap any dotted-underlined word** — "superset", "Block 1", "reps". Every piece
-  of jargon explains itself where it appears, every time.
-- **Watch the rest timer.** The ember ring draining *is* the time remaining.
-
-The content on this screen is written into the screen file for now. Phase 1
-moves it all into proper data files and builds the whole of Day 1.
+  Reps and weight are already filled in from last time, so the normal case is
+  one tap and no keyboard, ever.
+- **Notice it goes straight from the squat into the push-ups** with no rest,
+  then rests after those. That is what a superset is, and the app just does it
+  rather than explaining it.
+- **Tap the exercise name** for the form cue and the usual mistake.
+- **Tap any dotted-underlined word** — "superset", "Block 1", "reps". Every
+  piece of jargon explains itself where it appears, every time.
+- **Tap the big week number** on the front screen to jump around. Try week 7
+  (the easy week) and week 10 (the hardest) and watch the session change — sets,
+  rests, and notes about what is different.
+- **Close the browser mid-session and open it again.** It picks up on the exact
+  set you were on.
+- **Say you have no bench and no bike** during setup, and watch the exercises
+  swap to sofa and floor versions, with the reason given.
 
 ### Not built yet
 
-Days 2 and 3, the other three blocks, the progression engine, saving anything
-between refreshes, first-run equipment setup, the bike player, progress, and
-offline installation. All of that is Phases 1–4.
+- **Days 2 and 3** — Phase 3.
+- **The progression prompt** — the app records everything it needs, but it does
+  not yet tell you when you have earned a jump. Phase 3.
+- **Progress screens and the weekly check-in** — Phase 4.
+- **Backup/export, exercise illustrations, the week 12 retest** — Phase 4.
 
-Right now, **refreshing the page starts over** — there is no saving yet. That
-arrives in Phase 1.
+### Checking it still works
+
+```bash
+npm test
+```
+
+80 automated checks on the parts where a mistake would be invisible: that every
+week has the right number of sets and the right rest, that week 7 is a genuine
+deload, that the bike intervals match the plan for each block, that the app
+never suggests a dumbbell you do not own, that a no-bench setup produces a
+complete session rather than gaps, and that every piece of jargon on screen has
+a definition behind it.
+
+These also run automatically on GitHub before anything is published, so a broken
+version cannot reach the phone.
 
 ---
 

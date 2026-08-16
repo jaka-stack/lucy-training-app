@@ -3,20 +3,8 @@
    standing, with one thumb available.
    ========================================================================== */
 
-.screen {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--ground);
-
-  /* Keep clear of the notch and the home indicator. */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-
-  max-width: 520px; /* on a tablet or desktop, stay phone-shaped */
-  margin: 0 auto;
-  width: 100%;
-}
+/* .screen, .body, .footer, .btn-* and the type classes live in
+   styles/app.css — they are shared with the other screens. */
 
 /* --- header ------------------------------------------------------------- */
 
@@ -343,13 +331,21 @@
 
 /* --- effort, which is also the log button ------------------------------- */
 
-/* Pinned below the scrolling area — the action is in the same place on every
-   phone, every set, whatever else is on screen. */
-.effort {
+/* The controls she touches: reps, weight, effort. Pinned below the scrolling
+   area, so they sit in the same place on every phone and in every week,
+   whatever else is on screen above them. */
+.console {
   flex-shrink: 0;
   padding: var(--s3) var(--s5) var(--s4);
   border-top: 1px solid var(--line-soft);
   background: var(--ground);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.effort {
+  flex-shrink: 0;
 }
 
 /* The only ember label on the screen: this is the action. */
@@ -410,6 +406,261 @@
 }
 
 /* --- rest --------------------------------------------------------------- */
+
+/* --- steps that are mostly prose (warm-up, ramp-up, bike, summary) ------- */
+
+.body-centre {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.step-title {
+  margin-top: var(--s2);
+}
+
+.step-lead {
+  margin-top: var(--s4);
+}
+
+/* --- tick-off lists ----------------------------------------------------- */
+
+.check-list {
+  list-style: none;
+  margin-top: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  width: 100%;
+  text-align: left;
+  min-height: var(--touch-min);
+  padding: var(--s3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  background: var(--ground-raised);
+}
+
+.check-box {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+}
+
+.check.is-done .check-box {
+  background: var(--done);
+  border-color: var(--done);
+}
+
+.icon-tick {
+  width: 18px;
+  height: 18px;
+  stroke: var(--ground);
+  stroke-width: 4;
+}
+
+.check-name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+  color: var(--chalk);
+}
+
+/* Done items dim rather than vanish, so the list still reads as a whole. */
+.check.is-done .check-name {
+  color: var(--chalk-faint);
+  text-decoration: line-through;
+  text-decoration-color: var(--chalk-faint);
+}
+
+.check-amount {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--ember);
+  margin-top: 1px;
+}
+
+.check.is-done .check-amount {
+  color: var(--chalk-faint);
+}
+
+.check-why {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+  margin-top: var(--s1);
+}
+
+/* --- ramp-up / interval intro card -------------------------------------- */
+
+.rampup-card {
+  margin-top: var(--s5);
+  padding: var(--s4);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ember);
+  border-radius: var(--r);
+  background: var(--ground-raised);
+}
+
+.rampup-what {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  color: var(--chalk);
+  line-height: 1.1;
+}
+
+.rampup-how {
+  margin-top: var(--s2);
+  font-size: var(--t-md);
+  color: var(--chalk-dim);
+}
+
+/* --- block variation note ----------------------------------------------- */
+
+/* Something the block changed about how this exercise is done. Ember-edged
+   because it is new information she has not seen in previous weeks. */
+.ex-variation {
+  margin-top: var(--s3);
+  padding: var(--s2) var(--s3);
+  border-left: 2px solid var(--ember);
+  background: var(--ember-wash);
+  border-radius: 0 var(--r) var(--r) 0;
+  font-size: var(--t-sm);
+  color: var(--chalk);
+}
+
+/* --- interval player ---------------------------------------------------- */
+
+.interval {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--s5);
+  gap: var(--s3);
+  transition: background var(--med) var(--ease);
+}
+
+/* The whole screen changes state, so she can tell hard from easy at a glance
+   from across the room without reading a word. */
+.interval.is-hard {
+  background: var(--ember);
+}
+
+.interval.is-hard .interval-round,
+.interval.is-hard .interval-phase,
+.interval.is-hard .interval-time,
+.interval.is-hard .interval-hint {
+  color: var(--on-ember);
+}
+
+.interval-phase {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--chalk-dim);
+}
+
+.interval-time {
+  font-family: var(--font-display);
+  font-size: 140px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 80;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--chalk);
+}
+
+.interval-hint {
+  font-size: var(--t-md);
+  color: var(--chalk-dim);
+  max-width: 26ch;
+}
+
+/* --- summary ------------------------------------------------------------ */
+
+.summary-list {
+  margin-top: var(--s5);
+  border-top: 1px solid var(--line-soft);
+}
+
+.summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.summary-name {
+  font-size: var(--t-md);
+  color: var(--chalk);
+  text-transform: capitalize;
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.summary-slot {
+  font-family: var(--font-display);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--chalk-faint);
+}
+
+.summary-sets {
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk-dim);
+  white-space: nowrap;
+}
+
+.summary-weight {
+  color: var(--chalk-faint);
+  margin-right: var(--s2);
+}
+
+.summary-note {
+  margin-top: var(--s5);
+  font-size: var(--t-sm);
+}
+
+/* --- watch link --------------------------------------------------------- */
+
+.watch-link {
+  display: block;
+  margin-top: var(--s5);
+  min-height: var(--touch-min);
+  line-height: var(--touch-min);
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: var(--chalk);
+  font-weight: 600;
+  text-decoration: none;
+}
 
 .rest {
   flex: 1;
@@ -486,22 +737,6 @@
   font-variation-settings: 'wdth' 88;
   margin-top: var(--s2);
   color: var(--chalk);
-}
-
-.btn-primary {
-  width: 100%;
-  min-height: var(--touch-primary);
-  border-radius: var(--r);
-  background: var(--ember);
-  color: var(--on-ember);
-  font-family: var(--font-display);
-  font-size: var(--t-md);
-  font-weight: 700;
-  font-variation-settings: 'wdth' 90;
-}
-
-.btn-primary:active {
-  background: var(--ember-quiet);
 }
 
 .rest-logged {
@@ -594,7 +829,8 @@
     display: none;
   }
 
-  .effort {
+  .console {
     padding: var(--s2) var(--s5) var(--s3);
+    gap: var(--s2);
   }
 }

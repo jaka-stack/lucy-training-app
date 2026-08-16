@@ -1,0 +1,114 @@
+.setup-welcome {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.setup-title {
+  margin-top: var(--s3);
+}
+
+.setup-intro {
+  margin-top: var(--s6);
+}
+
+.setup-q {
+  margin-top: var(--s3);
+}
+
+.setup-help {
+  margin-top: var(--s4);
+  font-size: var(--t-sm);
+}
+
+.setup-foot {
+  margin-top: var(--s3);
+  text-align: center;
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+}
+
+/* --- dumbbell picker ---------------------------------------------------- */
+
+.db-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s2);
+  margin-top: var(--s5);
+}
+
+.db-chip {
+  min-height: var(--touch-min);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ground-well);
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk-dim);
+  transition:
+    background var(--fast) var(--ease),
+    color var(--fast) var(--ease);
+}
+
+.db-unit {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 1px;
+  opacity: 0.6;
+}
+
+.db-chip.is-on {
+  background: var(--chalk);
+  border-color: var(--chalk);
+  color: var(--ground);
+}
+
+/* --- single-choice rows ------------------------------------------------- */
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  margin-top: var(--s5);
+}
+
+.choice {
+  text-align: left;
+  min-height: var(--touch-primary);
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ground-raised);
+  transition: border-color var(--fast) var(--ease);
+}
+
+/* The chosen option is the only ember thing on the screen — it is the answer
+   she has given, and the thing the primary button will act on. */
+.choice.is-on {
+  border-color: var(--ember);
+  background: var(--ember-wash);
+}
+
+.choice-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+  color: var(--chalk);
+}
+
+.choice-detail {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+  margin-top: 2px;
+}
+
+.choice.is-on .choice-detail {
+  color: var(--chalk-dim);
+}

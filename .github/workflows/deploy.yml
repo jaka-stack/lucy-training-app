@@ -40,6 +40,10 @@ jobs:
       # so the build on GitHub matches the one on your machine.
       - run: npm ci
 
+      # If the programme logic is wrong, stop here rather than publishing it
+      # to her phone.
+      - run: npm test
+
       - run: npm run build
 
       # enablement: true switches GitHub Pages on for the repository if it is

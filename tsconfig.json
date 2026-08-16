@@ -16,5 +16,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  // Tests run in Node and use Node's APIs, so they are checked separately by
+  // tsconfig.test.json rather than against the browser settings above.
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
 }

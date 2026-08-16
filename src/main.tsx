@@ -4,11 +4,15 @@ import { createRoot } from 'react-dom/client';
 import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/app.css';
 
-import { SetLogger } from './screens/SetLogger';
+import { StoreProvider } from './state/store';
+import { App } from './App';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <SetLogger />
+    <StoreProvider>
+      <App />
+    </StoreProvider>
   </StrictMode>,
 );

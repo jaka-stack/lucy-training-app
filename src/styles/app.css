@@ -1,0 +1,125 @@
+/* Shared building blocks used on more than one screen. Screen-specific styles
+   live next to their screen. */
+
+.screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  max-width: 520px; /* on a tablet or desktop, stay phone-shaped */
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* A scrolling body with a pinned action at the bottom — the layout used by
+   most screens in the app. */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+  padding: var(--s5);
+}
+
+.footer {
+  flex-shrink: 0;
+  padding: var(--s3) var(--s5) var(--s4);
+  border-top: 1px solid var(--line-soft);
+  background: var(--ground);
+}
+
+/* --- buttons ------------------------------------------------------------ */
+
+.btn-primary {
+  width: 100%;
+  min-height: var(--touch-primary);
+  border-radius: var(--r);
+  background: var(--ember);
+  color: var(--on-ember);
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+  padding: var(--s3);
+}
+
+.btn-primary:active {
+  background: var(--ember-quiet);
+}
+
+.btn-primary:disabled {
+  background: var(--ground-well);
+  color: var(--chalk-faint);
+}
+
+.btn-quiet {
+  width: 100%;
+  min-height: var(--touch-min);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: var(--chalk);
+  font-size: var(--t-md);
+  font-weight: 600;
+  padding: var(--s3);
+}
+
+.btn-quiet:active {
+  background: var(--ground-press);
+}
+
+/* A low-key text action, e.g. "Skip", "Not today". Never styled to compete
+   with the primary action, but never hidden either. */
+.btn-text {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  color: var(--chalk-dim);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  text-align: center;
+}
+
+.btn-text:active {
+  color: var(--chalk);
+}
+
+/* --- type --------------------------------------------------------------- */
+
+.h1 {
+  font-family: var(--font-display);
+  font-size: var(--t-xl);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+
+.prose {
+  color: var(--chalk-dim);
+  font-size: var(--t-md);
+  line-height: 1.5;
+}
+
+.prose + .prose {
+  margin-top: var(--s4);
+}
+
+/* --- cards -------------------------------------------------------------- */
+
+.card {
+  background: var(--ground-raised);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  padding: var(--s4);
+}
