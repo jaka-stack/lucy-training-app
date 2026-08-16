@@ -207,11 +207,41 @@ before/after photo comparison, and nagging notifications. Every one of them
 would push toward the pressure the programme's own tone avoids. Reasons are in
 `DECISIONS.md`.
 
-Exercise illustrations were planned and dropped — a vague drawing of a hinge is
-worse than the sentence describing it. The written cue and common mistake are
-always there offline; the video search link needs a connection. If you want
-visuals, photographs or a clip of someone actually doing the movement is the
-right answer.
+Hand-drawn exercise illustrations were planned and dropped — a vague drawing of
+a hinge is worse than the sentence describing it. **Photographs, however, drop
+straight in — see below.**
+
+---
+
+## Adding pictures to the exercises
+
+Put a picture in **`src/exercise-images/`**, named after the exercise, and it
+appears at the top of that exercise's "How to do it" panel — the one that opens
+when you tap an exercise name mid-session. **No code editing.**
+
+1. Get a photo, or a short animation, of the movement.
+2. Rename it to match the exercise exactly, all lower case with the dashes:
+   `goblet-squat.jpg`
+3. Drop it in `src/exercise-images/`
+4. `git push`. Live a minute later.
+
+`.jpg`, `.jpeg`, `.png`, `.webp` and `.gif` all work. **An animated `.gif` is
+often better than a still**, because these are movements rather than positions
+— two or three seconds showing a whole rep.
+
+**The full list of filenames is in `src/exercise-images/README.txt`**, grouped
+by training day. There are 19. You do not have to do all of them — any exercise
+without a picture just shows the written cue as it does now, and nothing looks
+broken or unfinished.
+
+**Keep them under about 300 KB each.** They get downloaded onto the phone so
+they work with no internet, and a 5 MB photo straight off a camera makes the
+app slow to install without looking any better on a phone screen.
+
+**Don't use pictures taken from someone else's website or app.** Either shoot
+them yourself or use a source that clearly allows reuse — linking to a YouTube
+search, as the app already does, is a different thing from copying someone's
+photographs into it.
 
 ### Checking it still works
 

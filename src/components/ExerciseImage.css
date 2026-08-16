@@ -1,0 +1,14 @@
+/* Sits at the top of the "How to do it" sheet, above the cue. Full width,
+   its own height, on a slightly raised ground so a photo with a pale
+   background does not bleed into the sheet. */
+
+.ex-image {
+  display: block;
+  width: 100%;
+  max-height: 42vh;
+  object-fit: contain;
+  background: var(--ground-well);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  margin-bottom: var(--s5);
+}

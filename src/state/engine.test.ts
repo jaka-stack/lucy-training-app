@@ -723,6 +723,38 @@ const squat = DAY_1.exercises.find((e) => e.exerciseId === 'goblet-squat')!;
   check('the empty state starts at week 1', INITIAL_STATE.currentWeek, 1);
 }
 
+/* --- the picture filename list stays honest ------------------------------ */
+
+/* src/exercise-images/README.txt tells a non-developer what to name their
+   photo files. If an exercise is added or renamed and that list is not
+   updated, someone follows the instructions, nothing appears, and there is no
+   error to explain why. This keeps the two in step. */
+{
+  const { readFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const { EXERCISES } = await import('../data/exercises');
+
+  const readme = readFileSync(
+    join(import.meta.dirname, '..', 'exercise-images', 'README.txt'),
+    'utf8',
+  );
+
+  // The indented filenames under "THE FILENAMES".
+  const listed = new Set(
+    [...readme.matchAll(/^ {4}([a-z0-9-]+)\s*(?:\(.*\))?$/gm)].map((m) => m[1]),
+  );
+
+  const actual = Object.keys(EXERCISES);
+
+  const missingFromReadme = actual.filter((id) => !listed.has(id));
+  check('every exercise is listed in the picture instructions',
+    missingFromReadme, []);
+
+  const staleInReadme = [...listed].filter((id) => !actual.includes(id));
+  check('the picture instructions list no exercises that do not exist',
+    staleInReadme, []);
+}
+
 /* --- every jargon term on screen has a definition ------------------------ */
 
 /* The requirement is that any term a beginner would not know explains itself

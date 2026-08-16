@@ -29,7 +29,12 @@ export default defineConfig({
       workbox: {
         // Everything the app is made of gets stored on the phone at install
         // time. After the first visit it never needs the network again.
-        globPatterns: ['**/*.{js,css,html,woff2,png,svg}'],
+        // Exercise photos are included, so form cues work in aeroplane mode
+        // too — which is the whole point of having them.
+        globPatterns: ['**/*.{js,css,html,woff2,png,svg,jpg,jpeg,webp,gif}'],
+        // A few large photos should not silently fall out of the offline
+        // bundle. 4 MB each is far more than any of these need.
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         // Any navigation falls back to the app shell, so a reload in
         // aeroplane mode opens the app instead of a browser error page.
         navigateFallback: 'index.html',

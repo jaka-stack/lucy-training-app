@@ -14,6 +14,7 @@ import {
 } from '../state/engine';
 import { Term } from '../components/Term';
 import { Sheet } from '../components/Sheet';
+import { ExerciseImage } from '../components/ExerciseImage';
 import { cueDone, cueEasy, cueHard, cueRestOver } from '../lib/cues';
 import { useWakeLock } from '../lib/useWakeLock';
 import './Session.css';
@@ -502,6 +503,10 @@ function SetStep({
         kicker="How to do it"
         title={set.exercise.name}
       >
+        <ExerciseImage
+          exerciseId={set.exercise.id}
+          name={set.exercise.name}
+        />
         <p className="lead">{set.exercise.cue}</p>
 
         {set.exercise.substitutionNote && (
@@ -980,6 +985,10 @@ function RetestStep({
         kicker="How to do it"
         title={step.exercise.name}
       >
+        <ExerciseImage
+          exerciseId={step.exercise.id}
+          name={step.exercise.name}
+        />
         <p className="lead">{step.exercise.cue}</p>
         <div className="block">
           <span className="label">The usual mistake</span>
