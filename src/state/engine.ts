@@ -1,13 +1,36 @@
 import {
-  bikeFinisherForWeek,
+  bikeFinisher,
   planForWeek,
   type BikePlan,
   type Day,
   type PrescribedExercise,
   type WeekPlan,
 } from '../data/programme';
-import { resolveExercise, type ResolvedExercise } from '../data/exercises';
-import type { Equipment, SessionRecord } from './types';
+import {
+  resolveExercise,
+  type BenchKind,
+  type ResolvedExercise,
+} from '../data/exercises';
+import type { Adjustments, Equipment, SessionRecord } from './types';
+
+/**
+ * The rep range after any ladder steps she has taken. The 'reps' rung raises
+ * the top of the range by up to 5 (§4, step 2), so both the screen and the
+ * progression check have to agree about where the top now is.
+ */
+export function effectiveRange(
+  base: [number, number],
+  adj: Adjustments | undefined,
+): [number, number] {
+  const bonus = adj?.bonusReps ?? 0;
+  return bonus > 0 ? [base[0], base[1] + bonus] : base;
+}
+
+/** The equipment record, expressed the way resolveExercise wants it. */
+export function benchKind(equipment: Equipment): BenchKind {
+  if (!equipment.hasBench) return 'none';
+  return equipment.benchInclines ? 'incline' : 'flat';
+}
 
 /* ==========================================================================
    THE ENGINE
@@ -44,11 +67,13 @@ export type PlannedSet = {
   setNumber: number;
   totalSets: number;
   reps: [number, number];
+  /** Set instead of reps for holds like planks. Seconds. */
+  seconds?: [number, number];
   perSide: boolean;
   /** kg, or null for bodyweight. */
   suggestedWeight: number | null;
   weightStyle: 'one' | 'pair' | 'none';
-  /** Pre-filled rep count — usually exactly what she will do. */
+  /** Pre-filled count — reps, or seconds for a hold. */
   expectedReps: number;
   targetRpe: [number, number];
   tempo: string;
@@ -102,23 +127,69 @@ function lastPerformanceFor(
   return null;
 }
 
+/**
+ * Which block's version of an exercise to use.
+ *
+ * Week 7 sits inside block 3 but is the deload: "same exercises, roughly half
+ * the sets, nothing above RPE 5". Block 3's harder variations belong to weeks
+ * 8-9, so during the deload we use the block 2 version — exactly what she was
+ * already doing in weeks 4-6.
+ */
+function effectiveBlock(plan: WeekPlan): 1 | 2 | 3 | 4 {
+  return plan.isDeload ? 2 : plan.block;
+}
+
+/** The prescription after any block has changed the movement itself. */
+export type Effective = {
+  reps: [number, number];
+  seconds?: [number, number];
+  perSide: boolean;
+  weightStyle: 'one' | 'pair' | 'none';
+  weightOverride?: number | null;
+};
+
+function effectivePrescription(
+  pe: PrescribedExercise,
+  plan: WeekPlan,
+): Effective {
+  const b = effectiveBlock(plan);
+  const o = b === 1 ? undefined : pe.blockOverride?.[b];
+
+  return {
+    reps: o?.reps ?? pe.reps,
+    seconds: o?.seconds ?? pe.seconds,
+    perSide: o?.perSide ?? pe.perSide ?? false,
+    weightStyle: o?.weightStyle ?? pe.weightStyle,
+    weightOverride: o?.weight,
+  };
+}
+
 function suggestWeight(
   pe: PrescribedExercise,
   plan: WeekPlan,
   equipment: Equipment,
   history: SessionRecord[],
+  eff: Effective,
 ): number | null {
-  if (pe.weightStyle === 'none') return null;
+  if (eff.weightStyle === 'none') return null;
 
-  // What she actually lifted last time beats anything the page says.
+  // When a block changes the movement itself — the hip thrust going
+  // single-leg in block 4 — its weight replaces history, because what she
+  // lifted last week was effectively a different exercise.
+  if (eff.weightOverride !== undefined) {
+    return eff.weightOverride === null
+      ? null
+      : snapToOwned(eff.weightOverride, equipment.dumbbells);
+  }
+
+  // Otherwise what she actually lifted last time beats anything the page says.
   const last = lastPerformanceFor(pe.exerciseId, history);
   if (last && last.weight !== null) return last.weight;
 
-  // Otherwise the programme's number for this block, snapped to her kit.
   // Block 1 always uses the day page's starting weight; blocks 2-4 may name
   // their own in the block table.
-  const blockSpecific =
-    plan.block === 1 ? undefined : pe.blockWeight?.[plan.block];
+  const b = effectiveBlock(plan);
+  const blockSpecific = b === 1 ? undefined : pe.blockWeight?.[b];
   const prescribed = blockSpecific ?? pe.startWeight;
   if (prescribed === null) return null;
   return snapToOwned(prescribed, equipment.dumbbells);
@@ -128,26 +199,67 @@ function suggestWeight(
 
 /* From the block table (§7). These are changes to the exercise itself, over
    and above the tempo and set changes that apply to everything. */
-function variationFor(exerciseId: string, plan: WeekPlan): string | undefined {
+function variationFor(
+  exerciseId: string,
+  plan: WeekPlan,
+  bench: BenchKind,
+): string | undefined {
   if (plan.isDeload) return undefined; // week 7 changes nothing but volume
 
+  const b = plan.block;
+
+  /* --- Day 1 ---------------------------------------------------------- */
+
   if (exerciseId === 'incline-pushup') {
-    if (plan.block === 3)
-      return 'If you can do 12 clean reps with your hands on the bench, move them to the floor this block.';
-    if (plan.block === 4)
-      return 'Floor push-ups now, 3 seconds down. If your hips sag on the floor, go back to the bench — form is the ceiling.';
+    if (b === 3)
+      return bench === 'none'
+        ? 'If you can do 12 clean reps on your surface, use a lower one this block.'
+        : 'If you can do 12 clean reps with your hands on the bench, move them to the floor this block.';
+    if (b === 4)
+      return 'Floor push-ups now, 3 seconds down. If your hips sag on the floor, go back up — form is the ceiling.';
   }
 
-  if (exerciseId === 'goblet-squat' && plan.block === 4)
+  if (exerciseId === 'goblet-squat' && b === 4)
     return 'Pause for a full second at the bottom of every rep.';
 
-  if (exerciseId === 'db-rdl') {
-    if (plan.block === 4)
-      return 'Pause for a second just below the knee on the way down.';
+  if ((exerciseId === 'db-rdl' || exerciseId === 'b-stance-rdl') && b === 4)
+    return 'Pause for a second just below the knee on the way down.';
+
+  if (exerciseId === 'seated-shoulder-press' && b === 4)
+    return 'Pause for a second at the bottom, level with your shoulders.';
+
+  /* --- Day 2 ---------------------------------------------------------- */
+
+  if (exerciseId === 'hip-thrust') {
+    if (b === 3)
+      return 'Higher reps this block — or hold the squeeze at the top for 2 seconds instead.';
+    if (b === 4)
+      return 'One leg at a time now. Far harder than it sounds, so the weight comes right down — bodyweight is fine.';
   }
 
-  if (exerciseId === 'seated-shoulder-press' && plan.block === 4)
-    return 'Pause for a second at the bottom, level with your shoulders.';
+  if (exerciseId === 'incline-press') {
+    if (b === 2)
+      return 'Move up to the next dumbbell once you can do 12 clean reps.';
+    if (b === 3) return '3 seconds down on every rep.';
+    if (b === 4) return 'Pause for a second with the dumbbells on your chest.';
+  }
+
+  /* --- Day 3 ---------------------------------------------------------- */
+
+  if (exerciseId === 'split-squat') {
+    if (b === 3 || b === 4) {
+      const surface =
+        bench === 'none'
+          ? 'a chair, a step or the edge of the sofa'
+          : 'the bench';
+      const tempo = b === 4 ? ', and 3 seconds down' : '';
+      // The escape hatch: this movement is balance-limited, and at week 8 of
+      // her first ever programme a fall is a worse outcome than a slightly
+      // easier set. The programme is unchanged — this only tells her what to
+      // do if balance, rather than the leg, is what fails.
+      return `Back foot up on ${surface} now${tempo}. If it is your balance that gives out rather than your leg, keep both feet on the floor and slow the lowering instead — that is the harder version for you today.`;
+    }
+  }
 
   return undefined;
 }
@@ -174,8 +286,10 @@ export function buildSession(
   week: number,
   equipment: Equipment,
   history: SessionRecord[],
+  adjustments: Record<string, Adjustments> = {},
 ): Step[] {
   const plan = planForWeek(week);
+  const bench = benchKind(equipment);
   const steps: Step[] = [];
 
   steps.push({ kind: 'warmup' });
@@ -188,13 +302,22 @@ export function buildSession(
     const inGroup = day.exercises.filter((e) => e.group === group);
     if (inGroup.length === 0) continue;
 
-    const totalSets = setsForGroup(group, plan);
+    // The ladder's "add a set" rung applies to whichever exercises have taken
+    // it, capped at 4 working sets as the programme requires.
+    const groupHasExtraSet = inGroup.some(
+      (e) => adjustments[e.exerciseId]?.set,
+    );
+    const totalSets = Math.min(
+      4,
+      setsForGroup(group, plan) + (groupHasExtraSet ? 1 : 0),
+    );
 
     // The ramp-up set, on the first exercise of the session only (§5).
     if (isFirstExerciseOfSession) {
       const first = inGroup[0];
-      const ex = resolveExercise(first.exerciseId, equipment.hasBench);
-      const working = suggestWeight(first, plan, equipment, history);
+      const ex = resolveExercise(first.exerciseId, bench);
+      const eff = effectivePrescription(first, plan);
+      const working = suggestWeight(first, plan, equipment, history, eff);
       const lighter =
         working === null
           ? null
@@ -209,15 +332,40 @@ export function buildSession(
 
     for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
       for (const pe of inGroup) {
-        const ex = resolveExercise(pe.exerciseId, equipment.hasBench);
+        const ex = resolveExercise(pe.exerciseId, bench);
+        const eff = effectivePrescription(pe, plan);
+        const adj = adjustments[pe.exerciseId];
         const last = lastPerformanceFor(pe.exerciseId, history);
-        const weight = suggestWeight(pe, plan, equipment, history);
+
+        // A dumbbell she has agreed to move up to wins until she has lifted
+        // it; after that history takes over again.
+        const suggested = suggestWeight(pe, plan, equipment, history, eff);
+        const movingUp =
+          adj?.targetWeight !== undefined &&
+          (suggested === null || suggested < adj.targetWeight);
+        const weight = movingUp ? adj!.targetWeight! : suggested;
+
+        // Holds like planks are counted in seconds, not reps. Either way the
+        // ladder's extra reps raise the top of the range.
+        const range = effectiveRange(eff.seconds ?? eff.reps, adj);
 
         // Pre-fill with what she did for this set last time; otherwise the
         // bottom of the range, because double progression climbs from the
-        // bottom (§4).
-        const expectedReps =
-          last?.repsBySet[setNumber - 1] ?? last?.repsBySet[0] ?? pe.reps[0];
+        // bottom (§4). Moving up a dumbbell, or a block changing the
+        // movement, resets that — last week's numbers no longer apply.
+        const changedThisBlock = eff.weightOverride !== undefined;
+        const reset = changedThisBlock || movingUp;
+        const expectedReps = reset
+          ? range[0]
+          : (last?.repsBySet[setNumber - 1] ?? last?.repsBySet[0] ?? range[0]);
+
+        // Ladder steps that change how the rep itself is performed.
+        const extraNotes: string[] = [];
+        if (adj?.pause)
+          extraNotes.push('Pause for a second at the hardest point.');
+        if (adj?.unilateral)
+          extraNotes.push('One side at a time.');
+        const blockNote = variationFor(pe.exerciseId, plan, bench);
 
         steps.push({
           kind: 'set',
@@ -227,38 +375,44 @@ export function buildSession(
             exercise: ex,
             setNumber,
             totalSets,
-            reps: pe.reps,
-            perSide: pe.perSide ?? false,
+            reps: eff.seconds ? eff.reps : range,
+            seconds: eff.seconds ? range : undefined,
+            perSide: eff.perSide || (adj?.unilateral ?? false),
             suggestedWeight: weight,
-            weightStyle: pe.weightStyle,
+            weightStyle: eff.weightStyle,
             expectedReps,
             targetRpe: plan.targetRpe,
-            // The C pair keeps a controlled tempo; the slow lowering and
-            // pauses in blocks 3 and 4 apply to the A and B pairs (§7).
-            tempo:
-              group === 'C' ? 'Controlled, about 2 seconds down' : plan.tempo,
-            variationNote: variationFor(pe.exerciseId, plan),
-            lastTime: formatLastTime(last, pe.weightStyle),
+            // The C group keeps a controlled tempo; the slow lowering and
+            // pauses in blocks 3 and 4 apply to the A and B groups (§7).
+            // A tempo step she has taken herself applies wherever she took it.
+            tempo: adj?.tempo
+              ? '3 seconds down'
+              : group === 'C'
+                ? 'Controlled, about 2 seconds down'
+                : plan.tempo,
+            variationNote:
+              [blockNote, ...extraNotes].filter(Boolean).join(' ') || undefined,
+            lastTime: reset ? null : formatLastTime(last, eff.weightStyle),
           },
         });
       }
 
-      // Rest after each round of the pair. Inside the pair there is no rest —
-      // that is what makes it a superset — so the rest step only appears here.
-      const isLastRoundOfLastGroup =
-        group === 'C' && setNumber === totalSets;
+      // Rest after each round of the group. Inside the group there is no rest
+      // — that is what makes it a superset — so the rest step only appears
+      // here, once the whole group has been through.
+      const isLastRoundOfLastGroup = group === 'C' && setNumber === totalSets;
 
       if (!isLastRoundOfLastGroup) {
         const nextIsSameGroup = setNumber < totalSets;
         const nextLabel = nextIsSameGroup
-          ? `${resolveExercise(inGroup[0].exerciseId, equipment.hasBench).name} · set ${setNumber + 1} of ${totalSets}`
+          ? `${resolveExercise(inGroup[0].exerciseId, bench).name} · set ${setNumber + 1} of ${totalSets}`
           : 'Next pair';
         steps.push({ kind: 'rest', seconds: plan.rest, nextLabel });
       }
     }
   }
 
-  steps.push({ kind: 'bike', plan: bikeFinisherForWeek(week) });
+  steps.push({ kind: 'bike', plan: bikeFinisher(day.id, week) });
   steps.push({ kind: 'cooldown' });
   steps.push({ kind: 'summary' });
 

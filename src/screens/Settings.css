@@ -1,0 +1,30 @@
+.set-hdr {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s4) var(--s5) 0;
+}
+
+.set-back {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--chalk);
+  min-height: 44px;
+  padding-right: var(--s3);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.set-block + .set-block {
+  margin-top: var(--s6);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--line-soft);
+}
+
+.set-warn {
+  margin-top: var(--s3);
+  font-size: var(--t-sm);
+  color: var(--ember);
+  text-align: center;
+}

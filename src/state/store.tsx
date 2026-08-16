@@ -17,6 +17,7 @@ import {
 
 type Action =
   | { type: 'finishSetup'; settings: Settings }
+  | { type: 'updateSettings'; settings: Settings }
   | { type: 'setWeek'; week: number }
   | { type: 'startSession'; dayId: string; week: number }
   | { type: 'setStep'; index: number }
@@ -26,11 +27,19 @@ type Action =
   | { type: 'toggleCoolDown'; id: string }
   | { type: 'abandonSession' }
   | { type: 'finishSession'; bike: SessionRecord['bike'] }
+  | {
+      type: 'applyProgression';
+      exerciseId: string;
+      step: 'weight' | 'reps' | 'tempo' | 'pause' | 'unilateral' | 'set';
+      newWeight?: number;
+    }
+  | { type: 'declineProgression'; exerciseId: string }
   | { type: 'replaceAll'; state: AppState };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'finishSetup':
+    case 'updateSettings':
       return { ...state, settings: action.settings };
 
     case 'setWeek':
@@ -125,7 +134,76 @@ function reducer(state: AppState, action: Action): AppState {
         sets: ip.sets,
         bike: action.bike,
       };
-      return { ...state, history: [...state.history, record], inProgress: null };
+
+      // A weight she agreed to move up to stops being a target once she has
+      // actually lifted it. After that, history speaks for itself.
+      const adjustments = { ...state.adjustments };
+      for (const [id, adj] of Object.entries(adjustments)) {
+        if (adj.targetWeight === undefined) continue;
+        const lifted = ip.sets.some(
+          (s) => s.exerciseId === id && (s.weight ?? 0) >= adj.targetWeight!,
+        );
+        if (lifted) {
+          const { targetWeight: _drop, ...rest } = adj;
+          adjustments[id] = rest;
+        }
+      }
+
+      return {
+        ...state,
+        history: [...state.history, record],
+        inProgress: null,
+        adjustments,
+      };
+    }
+
+    case 'applyProgression': {
+      const prev = state.adjustments[action.exerciseId] ?? {};
+      const next = { ...prev };
+      delete next.declinedAt;
+
+      switch (action.step) {
+        case 'weight':
+          next.targetWeight = action.newWeight;
+          // Moving up means dropping back to the bottom of the range, so any
+          // extra reps earned at the old weight are given back (§4).
+          delete next.bonusReps;
+          break;
+        case 'reps':
+          next.bonusReps = Math.min(5, (prev.bonusReps ?? 0) + 5);
+          break;
+        case 'tempo':
+          next.tempo = true;
+          break;
+        case 'pause':
+          next.pause = true;
+          break;
+        case 'unilateral':
+          next.unilateral = true;
+          break;
+        case 'set':
+          next.set = true;
+          break;
+      }
+
+      return {
+        ...state,
+        adjustments: { ...state.adjustments, [action.exerciseId]: next },
+      };
+    }
+
+    case 'declineProgression': {
+      const prev = state.adjustments[action.exerciseId] ?? {};
+      return {
+        ...state,
+        adjustments: {
+          ...state.adjustments,
+          [action.exerciseId]: {
+            ...prev,
+            declinedAt: state.history.length,
+          },
+        },
+      };
     }
 
     case 'replaceAll':

@@ -86,6 +86,68 @@
   margin-top: 2px;
 }
 
+.today-settings {
+  display: block;
+  margin-top: var(--s2);
+  margin-left: auto;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--chalk-dim);
+  min-height: 44px;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--chalk-faint);
+  text-underline-offset: 4px;
+}
+
+/* --- earned a step up the ladder ---------------------------------------- */
+
+/* The one place the app actively tells her to do something she did not ask
+   about, so it is the one place a full ember-edged card is justified. */
+.levelup {
+  border: 1px solid var(--ember-quiet);
+  border-radius: var(--r);
+  background: var(--ember-wash);
+  padding: var(--s4);
+}
+
+.levelup-kicker {
+  color: var(--ember);
+}
+
+.levelup-ex {
+  margin-top: var(--s2);
+  font-size: var(--t-sm);
+  color: var(--chalk-dim);
+}
+
+.levelup-head {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  line-height: 1.1;
+  color: var(--chalk);
+  margin-top: var(--s1);
+}
+
+.levelup-why {
+  display: block;
+  text-align: left;
+  margin-top: var(--s3);
+  font-size: var(--t-sm);
+  color: var(--chalk-dim);
+  min-height: 44px;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--ember);
+  text-underline-offset: 4px;
+}
+
+.levelup-actions {
+  margin-top: var(--s3);
+}
+
 /* --- the session card --------------------------------------------------- */
 
 .today-card {
@@ -142,6 +204,74 @@
   font-size: var(--t-sm);
   color: var(--chalk-faint);
   text-align: center;
+}
+
+.today-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+}
+
+.today-swap {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--chalk-dim);
+  min-height: 44px;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--ember);
+  text-underline-offset: 4px;
+}
+
+/* --- day picker --------------------------------------------------------- */
+
+.day-list {
+  margin-top: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.day-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--s3);
+  text-align: left;
+  min-height: var(--touch-min);
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ground-well);
+}
+
+.day-row.is-on {
+  border-color: var(--ember);
+  background: var(--ember-wash);
+}
+
+.day-row-n {
+  font-family: var(--font-display);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+  align-self: center;
+}
+
+.day-row-name {
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+  color: var(--chalk);
+}
+
+.day-row-state {
+  grid-column: 2;
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
 }
 
 /* --- week picker -------------------------------------------------------- */

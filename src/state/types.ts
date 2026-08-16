@@ -57,6 +57,23 @@ export type InProgress = {
   coolDownDone: string[];
 };
 
+/** Steps of the progression ladder already applied to one exercise. */
+export type Adjustments = {
+  /** A dumbbell she has agreed to move up to but not yet lifted. */
+  targetWeight?: number;
+  /** Extra reps allowed above the top of the range, up to 5. */
+  bonusReps?: number;
+  tempo?: boolean;
+  pause?: boolean;
+  unilateral?: boolean;
+  set?: boolean;
+  /**
+   * How many sessions were in the history when she last said "not yet".
+   * Lets the app wait for new evidence instead of asking again immediately.
+   */
+  declinedAt?: number;
+};
+
 export type AppState = {
   /** null until first-run setup is finished. */
   settings: Settings | null;
@@ -64,6 +81,8 @@ export type AppState = {
   currentWeek: number;
   history: SessionRecord[];
   inProgress: InProgress | null;
+  /** Ladder steps applied per exercise, keyed by exercise id. */
+  adjustments: Record<string, Adjustments>;
 };
 
 export const INITIAL_STATE: AppState = {
@@ -71,4 +90,5 @@ export const INITIAL_STATE: AppState = {
   currentWeek: 1,
   history: [],
   inProgress: null,
+  adjustments: {},
 };

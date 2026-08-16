@@ -38,6 +38,24 @@ export type PrescribedExercise = {
    * here. Blocks not listed carry on from what she actually lifted.
    */
   blockWeight?: Partial<Record<2 | 3 | 4, number>>;
+  /**
+   * Where a block changes the exercise itself rather than just how hard it
+   * is — the hip thrust going single-leg in block 4, for instance — the
+   * changed fields go here. Straight from the block table (§7).
+   */
+  blockOverride?: Partial<
+    Record<
+      2 | 3 | 4,
+      {
+        reps?: [number, number];
+        seconds?: [number, number];
+        perSide?: boolean;
+        weightStyle?: 'one' | 'pair' | 'none';
+        /** Overrides blockWeight when the movement itself changed. */
+        weight?: number | null;
+      }
+    >
+  >;
 };
 
 export type Day = {
@@ -114,7 +132,161 @@ export const DAY_1: Day = {
   ],
 };
 
-export const DAYS: Day[] = [DAY_1];
+/* --- Day 2 — Hinge + Pull (§6.2) ---------------------------------------- */
+
+export const DAY_2: Day = {
+  id: 'day2',
+  number: 2,
+  title: 'Hinge and pull',
+  focus: 'Glutes, hamstrings, back, shoulders, waist',
+  coachNote:
+    'Your biggest glute day. On the lateral raises: if 5 kg will not move cleanly for 10 reps, only raise to 45 degrees and build the range week by week. Never swing it up.',
+  exercises: [
+    {
+      slot: 'A1',
+      group: 'A',
+      exerciseId: 'hip-thrust',
+      reps: [10, 15],
+      startWeight: 20,
+      weightStyle: 'one',
+      blockOverride: {
+        // "12-15 reps" then "15-20 reps or 2 s squeeze" then single-leg.
+        2: { reps: [12, 15] },
+        3: { reps: [15, 20] },
+        4: { reps: [10, 12], perSide: true, weight: 5 },
+      },
+    },
+    {
+      slot: 'A2',
+      group: 'A',
+      exerciseId: 'one-arm-row',
+      reps: [8, 12],
+      perSide: true,
+      startWeight: 10,
+      weightStyle: 'one',
+    },
+    {
+      slot: 'B1',
+      group: 'B',
+      exerciseId: 'reverse-lunge',
+      reps: [8, 10],
+      perSide: true,
+      startWeight: 5,
+      weightStyle: 'pair',
+    },
+    {
+      slot: 'B2',
+      group: 'B',
+      exerciseId: 'incline-press',
+      reps: [8, 12],
+      startWeight: 5,
+      weightStyle: 'pair',
+      // "2 x 10 kg when 12 reps are clean", then 10 kg with 3 s down,
+      // then 10-15 kg with a pause.
+      blockWeight: { 2: 10, 3: 10, 4: 15 },
+    },
+    {
+      slot: 'C1',
+      group: 'C',
+      exerciseId: 'lateral-raise',
+      reps: [10, 15],
+      startWeight: 5,
+      weightStyle: 'pair',
+    },
+    {
+      slot: 'C2',
+      group: 'C',
+      exerciseId: 'side-plank',
+      reps: [0, 0],
+      seconds: [20, 30],
+      perSide: true,
+      startWeight: null,
+      weightStyle: 'none',
+    },
+  ],
+};
+
+/* --- Day 3 — Single Leg + Arms (§6.3) ------------------------------------ */
+
+export const DAY_3: Day = {
+  id: 'day3',
+  number: 3,
+  title: 'Single leg and arms',
+  focus: 'Glutes, hamstrings, back, rear shoulders, arms',
+  coachNote:
+    'Everything here is done one side at a time or with a light weight, so it should feel easier on the lungs and harder on your balance.',
+  exercises: [
+    {
+      slot: 'A1',
+      group: 'A',
+      exerciseId: 'split-squat',
+      reps: [8, 10],
+      perSide: true,
+      startWeight: 5,
+      weightStyle: 'pair',
+    },
+    {
+      slot: 'A2',
+      group: 'A',
+      exerciseId: 'chest-supported-row',
+      reps: [10, 12],
+      startWeight: 10,
+      weightStyle: 'pair',
+    },
+    {
+      slot: 'B1',
+      group: 'B',
+      exerciseId: 'b-stance-rdl',
+      reps: [8, 10],
+      perSide: true,
+      startWeight: 10,
+      weightStyle: 'pair',
+      blockWeight: { 2: 15, 3: 20, 4: 20 },
+    },
+    {
+      slot: 'B2',
+      group: 'B',
+      exerciseId: 'rear-delt-fly',
+      reps: [12, 15],
+      startWeight: 5,
+      weightStyle: 'pair',
+    },
+    {
+      slot: 'C1',
+      group: 'C',
+      exerciseId: 'biceps-curl',
+      reps: [10, 12],
+      startWeight: 5,
+      weightStyle: 'pair',
+    },
+    {
+      slot: 'C2',
+      group: 'C',
+      exerciseId: 'triceps-extension',
+      reps: [10, 12],
+      startWeight: 5,
+      weightStyle: 'one',
+    },
+    {
+      // Day 3's last group is three exercises back to back, not two.
+      slot: 'C3',
+      group: 'C',
+      exerciseId: 'front-plank',
+      reps: [0, 0],
+      seconds: [20, 40],
+      startWeight: null,
+      weightStyle: 'none',
+    },
+  ],
+};
+
+export const DAYS: Day[] = [DAY_1, DAY_2, DAY_3];
+
+export function dayById(id: string): Day {
+  const d = DAYS.find((x) => x.id === id);
+  if (!d) throw new Error(`Unknown day: ${id}`);
+  return d;
+}
 
 /* ==========================================================================
    THE BLOCK TABLE (§7)
@@ -318,10 +490,17 @@ export type BikePlan =
       easySeconds: number;
       rounds: number;
       totalMinutes: number;
-    };
+    }
+  | { kind: 'steady'; minutes: number };
 
-/** Day 1's finisher. "Hard" means you cannot talk in full sentences. */
-export function bikeFinisherForWeek(week: number): BikePlan {
+/**
+ * The finisher for a given day and week.
+ *
+ * Days 1 and 3 get intervals; Day 2 gets a steady ride. Neither happens in
+ * block 1 or in the deload week. "Hard" means you cannot talk in full
+ * sentences; your breathing is the gauge, not a heart-rate monitor.
+ */
+export function bikeFinisher(dayId: string, week: number): BikePlan {
   const plan = planForWeek(week);
 
   // Block 1: none. Week 7: none ("none in wk 7").
@@ -335,6 +514,11 @@ export function bikeFinisherForWeek(week: number): BikePlan {
       kind: 'none',
       note: 'No finisher in the easy week. Keep the bike gentle.',
     };
+
+  // Day 2 is the steady ride: 8-12 minutes, growing across the blocks.
+  if (dayId === 'day2') {
+    return { kind: 'steady', minutes: plan.block === 2 ? 8 : plan.block === 3 ? 10 : 12 };
+  }
 
   if (plan.block === 2)
     return {

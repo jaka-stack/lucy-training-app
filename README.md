@@ -3,8 +3,9 @@
 A phone app built from the 12-week home dumbbell programme. It works offline,
 keeps everything on the phone, and needs no account.
 
-**Right now this is Phase 2 of 4** — first run and the whole of Day 1 work, for
-all twelve weeks. See [What's here so far](#whats-here-so-far).
+**Right now this is Phase 3 of 4** — all three training days work, for all
+twelve weeks, and the app applies the progression rule itself. See
+[What's here so far](#whats-here-so-far).
 
 ---
 
@@ -109,12 +110,13 @@ After any change, the browser updates by itself while `npm run dev` is running.
 
 ## What's here so far
 
-**Day 1 works completely**, for any of the twelve weeks, adapted to whatever kit
-you tell it you have.
+**All three training days work**, for any of the twelve weeks, adapted to
+whatever kit you tell it you have — and the app now applies the programme's
+progression rule for you.
 
 The first time you open it, it asks three questions — which dumbbells, whether
 you have a bench, whether you have a bike — and then builds every session around
-the answers. Then a session runs start to finish: warm-up, the three pairs of
+the answers. A session runs start to finish: warm-up, the three pairs of
 exercises, the bike finisher, the cool-down, and a summary.
 
 Things worth trying:
@@ -131,16 +133,29 @@ Things worth trying:
 - **Tap the big week number** on the front screen to jump around. Try week 7
   (the easy week) and week 10 (the hardest) and watch the session change — sets,
   rests, and notes about what is different.
+- **"Different day"** on the session card swaps between the three days. The app
+  suggests the next one you have not done, but the order is yours.
 - **Close the browser mid-session and open it again.** It picks up on the exact
   set you were on.
-- **Say you have no bench and no bike** during setup, and watch the exercises
-  swap to sofa and floor versions, with the reason given.
+- **"Your kit"**, top right, changes your equipment answers afterwards without
+  touching anything you have logged.
+- **Say you have no bench and no bike**, and watch the exercises swap to sofa,
+  floor and standing versions, each explaining the swap.
+
+### The progression rule
+
+This is the part the PDF asks you to do by hand. When you hit the top of the rep
+range on every set, at the right effort, two sessions running, the app says so
+and offers the next step — and picks *which* step based on the dumbbells you
+actually own.
+
+If your next dumbbell up is a small jump, it says take the weight. If it is a
+big jump — 15 kg to 20 kg is a third heavier — it offers more reps first, then
+slower lowering, then a pause, exactly as the programme's ladder says. There is
+always a "not yet", and only one exercise is ever moved at a time.
 
 ### Not built yet
 
-- **Days 2 and 3** — Phase 3.
-- **The progression prompt** — the app records everything it needs, but it does
-  not yet tell you when you have earned a jump. Phase 3.
 - **Progress screens and the weekly check-in** — Phase 4.
 - **Backup/export, exercise illustrations, the week 12 retest** — Phase 4.
 
@@ -150,12 +165,14 @@ Things worth trying:
 npm test
 ```
 
-80 automated checks on the parts where a mistake would be invisible: that every
+207 automated checks on the parts where a mistake would be invisible: that every
 week has the right number of sets and the right rest, that week 7 is a genuine
-deload, that the bike intervals match the plan for each block, that the app
-never suggests a dumbbell you do not own, that a no-bench setup produces a
-complete session rather than gaps, and that every piece of jargon on screen has
-a definition behind it.
+deload, that the bike plan matches each block and each day, that the app never
+suggests a dumbbell you do not own, that every kit combination produces a
+complete session rather than gaps, that the progression rule fires exactly when
+the programme says and never during the easy week, that it never tells you to
+pick up a heavier dumbbell for a press-up, and that every piece of jargon on
+screen has a definition behind it.
 
 These also run automatically on GitHub before anything is published, so a broken
 version cannot reach the phone.

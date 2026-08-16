@@ -36,6 +36,7 @@ export function load(): AppState {
       ...INITIAL_STATE,
       ...parsed,
       history: parsed.history ?? [],
+      adjustments: parsed.adjustments ?? {},
     };
   } catch {
     // A corrupt or unreadable save should not stop her training. Start clean

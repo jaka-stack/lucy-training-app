@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
-import { DAY_1, planForWeek, type BikePlan } from '../data/programme';
+import { dayById, planForWeek, type BikePlan } from '../data/programme';
 import { COOL_DOWN, WARM_UP, videoSearchUrl } from '../data/exercises';
 import {
   EFFORTS,
@@ -35,13 +35,21 @@ export function Session({ onExit }: { onExit: () => void }) {
 
   const steps = useMemo(() => {
     if (!ip) return [];
-    return buildSession(DAY_1, ip.week, equipment, state.history);
+    return buildSession(
+      dayById(ip.dayId),
+      ip.week,
+      equipment,
+      state.history,
+      state.adjustments,
+    );
     // Rebuilt only when the session or the kit changes — not when a set is
     // logged, so the plan she started with is the plan she finishes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ip?.dayId, ip?.week, equipment, state.history.length]);
+  }, [ip?.dayId, ip?.week, equipment, state.history.length, state.adjustments]);
 
   if (!ip || steps.length === 0) return null;
+
+  const day = dayById(ip.dayId);
 
   const index = Math.min(ip.stepIndex, steps.length - 1);
   const step = steps[index];
@@ -59,6 +67,7 @@ export function Session({ onExit }: { onExit: () => void }) {
     <div className="screen">
       <SessionHeader
         week={ip.week}
+        dayTitle={day.title}
         doneSets={doneSets}
         totalSets={totalSets}
         onExit={onExit}
@@ -132,6 +141,7 @@ export function Session({ onExit }: { onExit: () => void }) {
       {step.kind === 'summary' && (
         <SummaryStep
           week={ip.week}
+          dayId={ip.dayId}
           sets={ip.sets}
           cues={cues}
           onFinish={(bike) => {
@@ -148,11 +158,13 @@ export function Session({ onExit }: { onExit: () => void }) {
 
 function SessionHeader({
   week,
+  dayTitle,
   doneSets,
   totalSets,
   onExit,
 }: {
   week: number;
+  dayTitle: string;
   doneSets: number;
   totalSets: number;
   onExit: () => void;
@@ -161,7 +173,7 @@ function SessionHeader({
     <header className="hdr">
       <div className="hdr-row">
         <p className="label">
-          Week {week} · {DAY_1.title}
+          Week {week} · {dayTitle}
         </p>
         <button className="hdr-pause" onClick={onExit}>
           Pause
@@ -302,8 +314,19 @@ function SetStep({
   const [landed, setLanded] = useState(false);
   const lockedRef = useRef(false);
 
-  const [lo, hi] = set.reps;
+  const isHold = set.seconds !== undefined;
+  const [lo, hi] = set.seconds ?? set.reps;
   const isPair = set.weightStyle === 'pair';
+
+  // Holds move in 5-second steps; reps move one at a time.
+  const stepBy = isHold ? 5 : 1;
+  const unit = isHold
+    ? set.perSide
+      ? 'seconds each side'
+      : 'seconds'
+    : set.perSide
+      ? 'reps each side'
+      : 'reps';
 
   function commit(effort: Effort) {
     // Guard against a double tap logging two sets. A wet thumb bouncing would
@@ -333,7 +356,7 @@ function SetStep({
 
           <p className="ex-target">
             {lo === hi ? `${lo}` : `${lo}–${hi}`}{' '}
-            <Term k="rep">reps</Term>
+            {isHold ? 'seconds' : <Term k="rep">reps</Term>}
             {set.perSide && ' each side'}
             {weight !== null && (
               <> · {isPair ? `2 × ${weight} kg` : `${weight} kg`}</>
@@ -378,23 +401,21 @@ function SetStep({
         <section className={`stepper ${landed ? 'is-landed' : ''}`}>
           <button
             className="step-btn"
-            onClick={() => setReps((r) => Math.max(1, r - 1))}
-            aria-label="One fewer rep"
+            onClick={() => setReps((r) => Math.max(stepBy, r - stepBy))}
+            aria-label={isHold ? 'Five seconds fewer' : 'One fewer rep'}
           >
             <Minus />
           </button>
 
           <div className="step-value">
             <span className="step-number">{reps}</span>
-            <span className="label step-unit">
-              {set.perSide ? 'reps each side' : 'reps'}
-            </span>
+            <span className="label step-unit">{unit}</span>
           </div>
 
           <button
             className="step-btn"
-            onClick={() => setReps((r) => Math.min(60, r + 1))}
-            aria-label="One more rep"
+            onClick={() => setReps((r) => Math.min(300, r + stepBy))}
+            aria-label={isHold ? 'Five seconds more' : 'One more rep'}
           >
             <Plus />
           </button>
@@ -436,7 +457,7 @@ function SetStep({
               className="effort-btn"
               aria-label={`${e.title} — ${e.sub}. Log set ${set.setNumber}: ${
                 weight !== null ? `${weight} kilograms, ` : ''
-              }${reps} reps.`}
+              }${reps} ${isHold ? 'seconds' : 'reps'}.`}
               onClick={() => commit(e)}
             >
               <span className="effort-title">{e.title}</span>
@@ -616,13 +637,41 @@ function BikeStep({
     );
   }
 
+  if (plan.kind === 'steady') {
+    return (
+      <>
+        <div className="body body-centre">
+          <p className="label">Finisher · {plan.minutes} minutes</p>
+          <h1 className="h1 step-title">Steady ride</h1>
+
+          <div className="rampup-card">
+            <p className="rampup-what">{plan.minutes} minutes, constant pace</p>
+            <p className="rampup-how">Breathing hard, but in control</p>
+          </div>
+
+          <p className="prose step-lead">
+            Not intervals — one steady effort the whole way.{' '}
+            {hasBike
+              ? 'Moderate resistance on the bike.'
+              : 'A brisk walk, the stairs, or marching will do the same job.'}{' '}
+            Extra energy burned for almost no extra tiredness.
+          </p>
+        </div>
+
+        <div className="footer">
+          <button className="btn-primary" onClick={onNext}>
+            Done
+          </button>
+          <button className="btn-text" onClick={onNext}>
+            Skip it today
+          </button>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <IntervalPlayer
-      plan={plan}
-      hasBike={hasBike}
-      cues={cues}
-      onNext={onNext}
-    />
+    <IntervalPlayer plan={plan} hasBike={hasBike} cues={cues} onNext={onNext} />
   );
 }
 
@@ -817,16 +866,19 @@ function CoolDownStep({
 
 function SummaryStep({
   week,
+  dayId,
   sets,
   cues,
   onFinish,
 }: {
   week: number;
+  dayId: string;
   sets: { exerciseId: string; reps: number; weight: number | null }[];
   cues: boolean;
   onFinish: (bike: 'done' | 'skipped' | 'none') => void;
 }) {
   const plan = planForWeek(week);
+  const day = dayById(dayId);
 
   useEffect(() => {
     cueDone(cues);
@@ -858,7 +910,7 @@ function SummaryStep({
 
         <div className="summary-list">
           {[...byExercise.entries()].map(([id, list]) => {
-            const name = DAY_1.exercises.find((e) => e.exerciseId === id);
+            const name = day.exercises.find((e) => e.exerciseId === id);
             return (
               <div key={id} className="summary-row">
                 <p className="summary-name">

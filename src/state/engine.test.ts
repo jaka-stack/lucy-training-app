@@ -7,8 +7,16 @@
    ========================================================================== */
 
 import { buildSession, snapToOwned, nextDumbbellUp } from './engine';
-import { DAY_1, planForWeek, bikeFinisherForWeek } from '../data/programme';
-import type { Equipment, SessionRecord } from './types';
+import {
+  DAY_1,
+  DAY_2,
+  DAY_3,
+  DAYS,
+  planForWeek,
+  bikeFinisher,
+} from '../data/programme';
+import { progressionOffers, hasEarnedProgression } from './progression';
+import type { Adjustments, Equipment, SessionRecord, SetRecord } from './types';
 
 let failures = 0;
 let checks = 0;
@@ -73,14 +81,14 @@ check('block boundaries', [1, 3, 4, 6, 7, 9, 10, 12].map((w) => planForWeek(w).b
 
 /* --- the bike plan (§8) -------------------------------------------------- */
 
-check('no finisher in block 1', bikeFinisherForWeek(2).kind, 'none');
-check('no finisher in the deload week', bikeFinisherForWeek(7).kind, 'none');
+check('no finisher in block 1', bikeFinisher('day1',2).kind, 'none');
+check('no finisher in the deload week', bikeFinisher('day1',7).kind, 'none');
 
-const b2 = bikeFinisherForWeek(5);
+const b2 = bikeFinisher('day1',5);
 ok('block 2 intervals are 30/60 x 4', b2.kind === 'intervals' && b2.hardSeconds === 30 && b2.easySeconds === 60 && b2.rounds === 4);
-const b3 = bikeFinisherForWeek(9);
+const b3 = bikeFinisher('day1',9);
 ok('block 3 intervals are 40/60 x 5', b3.kind === 'intervals' && b3.hardSeconds === 40 && b3.rounds === 5);
-const b4 = bikeFinisherForWeek(11);
+const b4 = bikeFinisher('day1',11);
 ok('block 4 intervals are 45/60 x 6', b4.kind === 'intervals' && b4.hardSeconds === 45 && b4.rounds === 6);
 
 /* --- the shape of a built session ---------------------------------------- */
@@ -215,6 +223,297 @@ check('no dumbbell above the heaviest', nextDumbbellUp(12, [4, 8, 12]), null);
   const push7 = w7.find((s) => s.kind === 'set' && s.set.exercise.id === 'incline-pushup');
   ok('the deload week drops the harder variations',
     push7?.kind === 'set' && push7.set.variationNote === undefined);
+}
+
+/* --- Days 2 and 3 -------------------------------------------------------- */
+
+{
+  // Every day builds a complete session on every kit, in every week.
+  for (const day of DAYS) {
+    for (const kit of [fullKit, noBenchNoBike]) {
+      for (const week of [1, 4, 7, 10, 12]) {
+        const steps = buildSession(day, week, kit, noHistory);
+        const sets = steps.filter((s) => s.kind === 'set');
+        ok(`${day.id} week ${week} has sets`, sets.length > 0);
+        ok(
+          `${day.id} week ${week} never names a dumbbell she lacks`,
+          sets.every(
+            (s) =>
+              s.kind !== 'set' ||
+              s.set.suggestedWeight === null ||
+              kit.dumbbells.includes(s.set.suggestedWeight),
+          ),
+        );
+        ok(
+          `${day.id} week ${week} every exercise has a name and a cue`,
+          sets.every(
+            (s) =>
+              s.kind === 'set' &&
+              s.set.exercise.name.length > 0 &&
+              s.set.exercise.cue.length > 0,
+          ),
+        );
+      }
+    }
+  }
+}
+
+{
+  // Day 3's last group is a tri-set: three exercises back to back, one rest.
+  const steps = buildSession(DAY_3, 2, fullKit, noHistory);
+  const firstC = steps.findIndex((s) => s.kind === 'set' && s.set.group === 'C');
+  ok('Day 3 runs three C exercises back to back',
+    steps[firstC].kind === 'set' &&
+    steps[firstC + 1].kind === 'set' &&
+    steps[firstC + 2].kind === 'set');
+  check('Day 3 C group is three exercises',
+    DAY_3.exercises.filter((e) => e.group === 'C').length, 3);
+}
+
+{
+  // Planks are timed, not counted.
+  const steps = buildSession(DAY_3, 2, fullKit, noHistory);
+  const plank = steps.find((s) => s.kind === 'set' && s.set.exercise.id === 'front-plank');
+  ok('the front plank is measured in seconds',
+    plank?.kind === 'set' && plank.set.seconds !== undefined);
+  ok('the plank pre-fills from the bottom of its time range',
+    plank?.kind === 'set' && plank.set.expectedReps === 20);
+
+  const side = buildSession(DAY_2, 2, fullKit, noHistory)
+    .find((s) => s.kind === 'set' && s.set.exercise.id === 'side-plank');
+  ok('the side plank is timed and per side',
+    side?.kind === 'set' && side.set.seconds !== undefined && side.set.perSide);
+}
+
+{
+  // Day 2's finisher is a steady ride, not intervals.
+  check('Day 2 block 2 finisher is steady', bikeFinisher('day2', 5).kind, 'steady');
+  check('Day 1 block 2 finisher is intervals', bikeFinisher('day1', 5).kind, 'intervals');
+  check('Day 2 has no finisher in block 1', bikeFinisher('day2', 2).kind, 'none');
+  check('Day 2 has no finisher in the deload', bikeFinisher('day2', 7).kind, 'none');
+}
+
+{
+  // Block 4 turns the hip thrust single-leg and drops the weight right down.
+  const w11 = buildSession(DAY_2, 11, fullKit, noHistory);
+  const ht = w11.find((s) => s.kind === 'set' && s.set.exercise.id === 'hip-thrust');
+  ok('block 4 hip thrust is one leg at a time',
+    ht?.kind === 'set' && ht.set.perSide === true);
+  ok('block 4 hip thrust drops to a light weight',
+    ht?.kind === 'set' && (ht.set.suggestedWeight ?? 0) <= 5);
+  check('block 4 hip thrust reps', ht?.kind === 'set' ? ht.set.reps : null, [10, 12]);
+
+  // Block 3 raises its reps instead.
+  const w9 = buildSession(DAY_2, 9, fullKit, noHistory);
+  const ht9 = w9.find((s) => s.kind === 'set' && s.set.exercise.id === 'hip-thrust');
+  check('block 3 hip thrust reps', ht9?.kind === 'set' ? ht9.set.reps : null, [15, 20]);
+
+  // The deload uses the block 2 version, not block 3's harder one.
+  const w7 = buildSession(DAY_2, 7, fullKit, noHistory);
+  const ht7 = w7.find((s) => s.kind === 'set' && s.set.exercise.id === 'hip-thrust');
+  check('deload hip thrust uses the block 2 version',
+    ht7?.kind === 'set' ? ht7.set.reps : null, [12, 15]);
+}
+
+{
+  // A flat bench should give the flat-bench version, not the floor version.
+  const flat: Equipment = { dumbbells: [5, 10], hasBench: true, benchInclines: false, hasBike: true };
+  const steps = buildSession(DAY_3, 2, flat, noHistory);
+  const row = steps.find((s) => s.kind === 'set' && s.set.exercise.id === 'chest-supported-row');
+  ok('a flat bench swaps the chest-supported row for the bent-over version',
+    row?.kind === 'set' && row.set.exercise.name === 'Bent-over row');
+  ok('and explains the swap',
+    row?.kind === 'set' && !!row.set.exercise.substitutionNote);
+
+  const incline: Equipment = { ...flat, benchInclines: true };
+  const row2 = buildSession(DAY_3, 2, incline, noHistory)
+    .find((s) => s.kind === 'set' && s.set.exercise.id === 'chest-supported-row');
+  ok('an adjustable bench keeps the prescribed version',
+    row2?.kind === 'set' && row2.set.exercise.name === 'Chest-supported row'
+      && !row2.set.exercise.substitutionNote);
+
+  const press = buildSession(DAY_2, 2, flat, noHistory)
+    .find((s) => s.kind === 'set' && s.set.exercise.id === 'incline-press');
+  ok('a flat bench gives the flat press, not the floor press',
+    press?.kind === 'set' && press.set.exercise.name === 'Flat dumbbell press');
+
+  const pressNoBench = buildSession(DAY_2, 2, noBenchNoBike, noHistory)
+    .find((s) => s.kind === 'set' && s.set.exercise.id === 'incline-press');
+  ok('no bench gives the floor press',
+    pressNoBench?.kind === 'set' && pressNoBench.set.exercise.name === 'Floor press');
+}
+
+/* --- the progression rule ------------------------------------------------ */
+
+/** Build a session record where an exercise was done at the given reps/rpe. */
+function sessionWith(
+  week: number,
+  dayId: string,
+  exerciseId: string,
+  reps: number[],
+  rpe: number,
+  weight: number | null,
+): SessionRecord {
+  const sets: SetRecord[] = reps.map((r, i) => ({
+    exerciseId,
+    slot: 'A1',
+    setNumber: i + 1,
+    reps: r,
+    weight,
+    rpe,
+    effortLabel: 'Moderate',
+  }));
+  return {
+    id: `${dayId}-${week}-${Math.random()}`,
+    dayId,
+    week,
+    finishedAt: new Date().toISOString(),
+    sets,
+    bike: 'none',
+  };
+}
+
+const squat = DAY_1.exercises.find((e) => e.exerciseId === 'goblet-squat')!;
+
+{
+  // One qualifying session is not enough — the rule needs two in a row.
+  const one = [sessionWith(2, 'day1', 'goblet-squat', [12, 12, 12], 6, 15)];
+  ok('one good session does not trigger it',
+    !hasEarnedProgression(squat, DAY_1, one));
+
+  const two = [
+    sessionWith(2, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+  ];
+  ok('two good sessions in a row trigger it',
+    hasEarnedProgression(squat, DAY_1, two));
+
+  // Short of the top of the range on one set is not a qualifying session.
+  const short = [
+    sessionWith(2, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12, 11], 6, 15),
+  ];
+  ok('missing the top of the range on one set does not qualify',
+    !hasEarnedProgression(squat, DAY_1, short));
+
+  // At the top of the range but over the target effort is not qualifying —
+  // it means the weight is already hard enough.
+  const tooHard = [
+    sessionWith(2, 'day1', 'goblet-squat', [12, 12, 12], 9, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12, 12], 9, 15),
+  ];
+  ok('hitting the reps but above target effort does not qualify',
+    !hasEarnedProgression(squat, DAY_1, tooHard));
+
+  // Fewer sets than prescribed is not a qualifying session.
+  const shortSets = [
+    sessionWith(2, 'day1', 'goblet-squat', [12, 12], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12], 6, 15),
+  ];
+  ok('stopping early does not qualify',
+    !hasEarnedProgression(squat, DAY_1, shortSets));
+}
+
+{
+  // The deload must be neutral: it neither qualifies nor breaks the run.
+  const acrossDeload = [
+    sessionWith(6, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+    sessionWith(7, 'day1', 'goblet-squat', [8, 8], 5, 10),   // the easy week
+    sessionWith(8, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+  ];
+  ok('the deload week does not break the run',
+    hasEarnedProgression(squat, DAY_1, acrossDeload));
+}
+
+{
+  // Choosing the rung. With 5 kg gaps on a 15 kg lift the jump is 33%, so the
+  // ladder should NOT reach for the next dumbbell.
+  const history = [
+    sessionWith(2, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+  ];
+  const offers = progressionOffers(DAY_1, fullKit, history, {}, (id) => id);
+  check('one offer at a time', offers.length, 1);
+  check('a 5 kg jump on 15 kg is too big, so reps come first',
+    offers[0].step, 'reps');
+
+  // With 2.5 kg increments the same lift should just add weight.
+  const fineKit: Equipment = {
+    dumbbells: [10, 12.5, 15, 17.5, 20],
+    hasBench: true, benchInclines: true, hasBike: true,
+  };
+  const fineOffers = progressionOffers(DAY_1, fineKit, history, {}, (id) => id);
+  check('a small jump is taken as weight', fineOffers[0].step, 'weight');
+  check('and names the next dumbbell', fineOffers[0].newWeight, 17.5);
+}
+
+{
+  // The ladder walks on rather than repeating a rung.
+  const history = [
+    sessionWith(2, 'day1', 'goblet-squat', [17, 17, 17], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [17, 17, 17], 6, 15),
+  ];
+  const withReps: Record<string, Adjustments> = {
+    'goblet-squat': { bonusReps: 5 },
+  };
+  const offers = progressionOffers(DAY_1, fullKit, history, withReps, (id) => id);
+  check('after extra reps, the next rung is tempo', offers[0].step, 'tempo');
+
+  const withTempo: Record<string, Adjustments> = {
+    'goblet-squat': { bonusReps: 5, tempo: true },
+  };
+  check('after tempo comes the pause',
+    progressionOffers(DAY_1, fullKit, history, withTempo, (id) => id)[0].step,
+    'pause');
+}
+
+{
+  // Bodyweight exercises cannot take the weight rung at all.
+  const pushup = DAY_1.exercises.find((e) => e.exerciseId === 'incline-pushup')!;
+  const history = [
+    sessionWith(2, 'day1', 'incline-pushup', [12, 12, 12], 6, null),
+    sessionWith(3, 'day1', 'incline-pushup', [12, 12, 12], 6, null),
+  ];
+  ok('a bodyweight exercise can still earn a step',
+    hasEarnedProgression(pushup, DAY_1, history));
+  const offers = progressionOffers(DAY_1, fullKit, history, {}, (id) => id);
+  ok('and is never told to pick up a heavier dumbbell',
+    offers.length > 0 && offers[0].step !== 'weight');
+}
+
+{
+  // "Not yet" is respected until there is new evidence.
+  const history = [
+    sessionWith(2, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+  ];
+  const declined: Record<string, Adjustments> = {
+    'goblet-squat': { declinedAt: history.length },
+  };
+  check('declining stops it asking again straight away',
+    progressionOffers(DAY_1, fullKit, history, declined, (id) => id).length, 0);
+}
+
+{
+  // Accepting a weight step feeds through into the next session.
+  const history = [
+    sessionWith(2, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+  ];
+  const adj: Record<string, Adjustments> = { 'goblet-squat': { targetWeight: 20 } };
+  const steps = buildSession(DAY_1, 4, fullKit, history, adj);
+  const s = steps.find((x) => x.kind === 'set' && x.set.exercise.id === 'goblet-squat');
+  ok('the agreed heavier dumbbell is what gets suggested',
+    s?.kind === 'set' && s.set.suggestedWeight === 20);
+  ok('and the reps drop back to the bottom of the range',
+    s?.kind === 'set' && s.set.expectedReps === 8);
+
+  // The extra-set rung is capped at 4 working sets.
+  const capped = buildSession(DAY_1, 11, fullKit, noHistory, {
+    'goblet-squat': { set: true },
+  });
+  const a1 = capped.find((x) => x.kind === 'set' && x.set.group === 'A');
+  check('sets are capped at 4', a1?.kind === 'set' ? a1.set.totalSets : null, 4);
 }
 
 /* --- every jargon term on screen has a definition ------------------------ */

@@ -294,6 +294,112 @@ is meant not to create. Nothing was trained, so there is nothing to record.
 
 ---
 
+## Phase 2 — settings, Days 2 and 3, and the progression rule
+
+### D23. The settings screen exists because the app was lying
+
+The first-run screen said "you can change any of this later". There was no
+later. The only way out of a wrong answer was clearing the browser's storage,
+which would also have deleted every logged session.
+
+Now fixed. Changing equipment deliberately does **not** rewrite anything
+already logged — past sessions record what she actually lifted, and they are
+history rather than a prescription.
+
+### D24. Which version of an exercise her kit can do
+
+Resolution order, most faithful first:
+
+| Exercise wants | She has a tilting bench | She has a flat bench | She has no bench |
+|---|---|---|---|
+| Nothing | as written | as written | as written |
+| Any bench | as written | as written | sofa / chair version |
+| A tilting bench | as written | flat-bench version | floor / standing version |
+
+**Why the middle column exists:** a flat bench is a much better answer than the
+floor for someone who owns one. Sending her to a floor press when she has a
+bench would be treating "no incline" as "no equipment".
+
+### D25. Day 2's finisher is a steady ride, not intervals
+
+Straight from the bike plan (§8): intervals end Days 1 and 3; Day 2 ends with
+8–12 minutes steady. Neither happens in block 1 or in week 7.
+
+### D26. Week 7 uses the block 2 version of each exercise
+
+The deload sits inside block 3, but block 3's harder variations (the hip
+thrust's higher reps, the 3-second lowering, the rear foot on the bench) belong
+to weeks 8–9. Week 7 is "same exercises, roughly half the sets, nothing above
+RPE 5", so the app serves the block 2 version — exactly what she was already
+doing in weeks 4–6. Covered by tests.
+
+### D27. The progression rule, and how it picks a rung
+
+The rule as written: top of the rep range on **every** working set, at or below
+the target effort, **two sessions in a row**. Implemented literally, plus three
+judgement calls the PDF leaves open:
+
+**Which rung.** The PDF says take the weight "when the jump is manageable".
+That is a judgement about her actual dumbbells, so the app computes it: if the
+next dumbbell up is **20% or less** of what she is lifting, take it; otherwise
+climb the other rungs first. Someone with 2.5 kg increments will almost always
+just add weight; someone with 5 kg gaps on a 15 kg lift gets reps, then tempo,
+then a pause — which is exactly why the ladder exists.
+
+**Time-based and fixed-rep exercises.** Planks use the top of their *time*
+range. Exercises with no weight can never be offered the weight rung.
+
+**Incomplete sessions do not qualify.** If she stopped after two sets of a
+prescribed three, that session is not evidence — otherwise stopping early
+would look like success.
+
+**One at a time.** Only ever one offer, per §4: "Progress one exercise at a
+time. Don't jump three exercises in the same session or you won't know what
+caused the soreness."
+
+**She can decline.** "Not yet — keep it the same" is a first-class option, and
+the app then waits for a new session before asking again rather than putting
+the same card up every time she opens it.
+
+### D28. The deload is neutral for the progression counter
+
+Week 7 caps effort at RPE 5 and halves the sets, so nobody can qualify.
+Treating that as a broken run would punish her for following the plan. Deload
+sessions are skipped entirely when looking for two qualifying sessions in a
+row, so a run spanning week 7 survives it. Covered by a test.
+
+### D29. The progression offer appears on the day it applies to
+
+It shows on the Today screen when the day containing that exercise is the one
+she is about to do — not the moment it is earned. Telling her the goblet squat
+has earned a step while she is about to do Day 2 is noise.
+
+### D30. The split squat gets an escape hatch
+
+Block 3 moves the rear foot onto the bench. That is a balance-limited movement,
+and at week 8 of a first-ever programme a fall is a worse outcome than a
+slightly easier set.
+
+**The programme is unchanged** — the app still prescribes it. The note adds:
+if it is your *balance* that gives out rather than your leg, keep both feet on
+the floor and slow the lowering instead. That is the PDF's own ladder (step 3)
+applied to the person in front of it.
+
+### D31. Where the ladder's steps actually land
+
+Accepting a step changes the next session, not a note somewhere:
+
+| Rung | What the app then does |
+|---|---|
+| Weight | Suggests the heavier dumbbell and drops reps back to the bottom of the range. Stops once she has lifted it — history takes over again. |
+| Reps | Raises the top of the range by 5. Both the screen and the progression check use the new top. |
+| Tempo | Switches that exercise to 3 seconds down. |
+| Pause | Adds a 1-second pause note to every set of it. |
+| One side | Switches the exercise to per-side. |
+| Add a set | One more working set, capped at 4 as the programme requires. |
+
+---
+
 ## Open questions carried into Phase 1
 
 These were raised at plan stage and answered "pick what you think is best".

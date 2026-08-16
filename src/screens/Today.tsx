@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore } from '../state/store';
-import { DAY_1, blockIntro, planForWeek } from '../data/programme';
+import { DAYS, blockIntro, dayById, planForWeek } from '../data/programme';
 import { resolveExercise } from '../data/exercises';
+import { benchKind } from '../state/engine';
+import { progressionOffers } from '../state/progression';
 import { Term } from '../components/Term';
 import { Sheet } from '../components/Sheet';
 import { primeAudio } from '../lib/cues';
@@ -14,32 +16,75 @@ import './Today.css';
    this screen is secondary to the Start button.
    ========================================================================== */
 
-export function Today({ onStart }: { onStart: () => void }) {
+export function Today({
+  onStart,
+  onSettings,
+}: {
+  onStart: () => void;
+  onSettings: () => void;
+}) {
   const { state, dispatch } = useStore();
   const [showWeeks, setShowWeeks] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [showDays, setShowDays] = useState(false);
+  const [showWhy, setShowWhy] = useState(false);
 
   const week = state.currentWeek;
   const plan = planForWeek(week);
   const intro = blockIntro(week);
   const equipment = state.settings!.equipment;
+  const bench = benchKind(equipment);
 
   const resumable = state.inProgress;
-  const doneThisWeek = state.history.filter((h) => h.week === week).length;
 
-  const exerciseNames = DAY_1.exercises.map(
-    (e) => resolveExercise(e.exerciseId, equipment.hasBench).name,
+  // Which days are already done this week. Used to suggest the next one —
+  // never to mark a day as missed.
+  const doneThisWeek = useMemo(
+    () =>
+      new Set(
+        state.history.filter((h) => h.week === week).map((h) => h.dayId),
+      ),
+    [state.history, week],
   );
+
+  const suggested =
+    DAYS.find((d) => !doneThisWeek.has(d.id))?.id ?? DAYS[0].id;
+
+  // While a session is half-finished, that is the day — she cannot be doing
+  // two at once.
+  const [chosenDay, setChosenDay] = useState<string | null>(null);
+  const dayId = resumable?.dayId ?? chosenDay ?? suggested;
+  const day = dayById(dayId);
+
+  const exerciseNames = day.exercises.map(
+    (e) => resolveExercise(e.exerciseId, bench).name,
+  );
+
+  // Has she earned a step up the ladder on this day's work?
+  const offers = useMemo(
+    () =>
+      progressionOffers(
+        day,
+        equipment,
+        state.history,
+        state.adjustments,
+        (id) => resolveExercise(id, bench).name,
+      ),
+    [day, equipment, state.history, state.adjustments, bench],
+  );
+  const offer = resumable ? undefined : offers[0];
 
   function start() {
     // Unlocks sound on iOS while she is definitely touching the screen, so
     // the rest-over tone works later when she is not.
     primeAudio();
     if (!resumable) {
-      dispatch({ type: 'startSession', dayId: DAY_1.id, week });
+      dispatch({ type: 'startSession', dayId: day.id, week });
     }
     onStart();
   }
+
+  const weekComplete = doneThisWeek.size === DAYS.length;
 
   return (
     <div className="screen">
@@ -57,6 +102,9 @@ export function Today({ onStart }: { onStart: () => void }) {
             </p>
             {plan.isDeload && <p className="today-tag is-deload">Easy week</p>}
             {plan.isRetestWeek && <p className="today-tag">Final week</p>}
+            <button className="today-settings" onClick={onSettings}>
+              Your kit
+            </button>
           </div>
         </header>
 
@@ -71,19 +119,65 @@ export function Today({ onStart }: { onStart: () => void }) {
           </button>
         )}
 
+        {/* The progression rule, running itself. This is the thing the PDF
+            asks her to do by hand every week. */}
+        {offer && (
+          <div className="levelup">
+            <p className="label levelup-kicker">You've earned a step up</p>
+            <p className="levelup-ex">{offer.exerciseName}</p>
+            <p className="levelup-head">{offer.headline}</p>
+            <button className="levelup-why" onClick={() => setShowWhy(true)}>
+              Why this, and not just more weight?
+            </button>
+
+            <div className="levelup-actions">
+              <button
+                className="btn-primary"
+                onClick={() =>
+                  dispatch({
+                    type: 'applyProgression',
+                    exerciseId: offer.exerciseId,
+                    step: offer.step,
+                    newWeight: offer.newWeight,
+                  })
+                }
+              >
+                Do it
+              </button>
+              <button
+                className="btn-text"
+                onClick={() =>
+                  dispatch({
+                    type: 'declineProgression',
+                    exerciseId: offer.exerciseId,
+                  })
+                }
+              >
+                Not yet — keep it the same
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="today-card">
-          <p className="label">
-            {resumable ? 'Half finished' : `Day ${DAY_1.number}`}
-          </p>
-          <h1 className="h1 today-name">{DAY_1.title}</h1>
-          <p className="today-focus">{DAY_1.focus}</p>
+          <div className="today-card-top">
+            <p className="label">
+              {resumable ? 'Half finished' : `Day ${day.number}`}
+            </p>
+            {!resumable && (
+              <button className="today-swap" onClick={() => setShowDays(true)}>
+                Different day
+              </button>
+            )}
+          </div>
+
+          <h1 className="h1 today-name">{day.title}</h1>
+          <p className="today-focus">{day.focus}</p>
 
           <ol className="today-list">
             {exerciseNames.map((n, i) => (
               <li key={i} className="today-list-item">
-                <span className="today-list-slot">
-                  {DAY_1.exercises[i].slot}
-                </span>
+                <span className="today-list-slot">{day.exercises[i].slot}</span>
                 {n}
               </li>
             ))}
@@ -95,9 +189,15 @@ export function Today({ onStart }: { onStart: () => void }) {
           </p>
         </div>
 
-        {doneThisWeek > 0 && (
+        {weekComplete && !resumable && (
           <p className="today-done">
-            {doneThisWeek} session{doneThisWeek > 1 ? 's' : ''} logged this week.
+            All three sessions done this week. Nothing owed — start next week
+            whenever you are ready.
+          </p>
+        )}
+        {!weekComplete && doneThisWeek.size > 0 && (
+          <p className="today-done">
+            {doneThisWeek.size} of {DAYS.length} done this week.
           </p>
         )}
       </div>
@@ -124,6 +224,40 @@ export function Today({ onStart }: { onStart: () => void }) {
           </button>
         )}
       </div>
+
+      {/* Which day. The programme says days can move around the week, so she
+          picks; the app only suggests. */}
+      <Sheet
+        open={showDays}
+        onClose={() => setShowDays(false)}
+        kicker="Pick a day"
+        title="Which session?"
+      >
+        <p className="lead">
+          The order is up to you. The only rule the programme gives is to leave
+          at least one full day between sessions, and not to do all three back
+          to back.
+        </p>
+
+        <div className="day-list">
+          {DAYS.map((d) => (
+            <button
+              key={d.id}
+              className={`day-row ${d.id === dayId ? 'is-on' : ''}`}
+              onClick={() => {
+                setChosenDay(d.id);
+                setShowDays(false);
+              }}
+            >
+              <span className="day-row-n">Day {d.number}</span>
+              <span className="day-row-name">{d.title}</span>
+              <span className="day-row-state">
+                {doneThisWeek.has(d.id) ? 'done this week' : ''}
+              </span>
+            </button>
+          ))}
+        </div>
+      </Sheet>
 
       {/* Which week am I on? She controls this — the app never silently moves
           her on, because a missed week should not become a missed block. */}
@@ -175,6 +309,32 @@ export function Today({ onStart }: { onStart: () => void }) {
               {l}
             </p>
           ))}
+        </Sheet>
+      )}
+
+      {offer && (
+        <Sheet
+          open={showWhy}
+          onClose={() => setShowWhy(false)}
+          kicker="Why this step"
+          title={offer.headline}
+        >
+          <p className="lead">{offer.because}</p>
+          <p>
+            You hit the top of the rep range on every set, at the right effort,
+            two sessions running. That is the programme's rule for making an
+            exercise harder.
+          </p>
+          <p>
+            Weight is only the first rung of the ladder. Where the jump to your
+            next dumbbell is too big, slowing the lowering, pausing, working one
+            side at a time or adding reps all make the same dumbbell harder —
+            and they are often the better choice.
+          </p>
+          <p className="sheet-note">
+            Only one exercise moves up at a time, so if something gets sore you
+            know what caused it.
+          </p>
         </Sheet>
       )}
     </div>

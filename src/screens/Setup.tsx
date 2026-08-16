@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
+import { DUMBBELL_OPTIONS } from '../data/kit';
 import type { Equipment } from '../state/types';
 import './Setup.css';
 
@@ -13,9 +14,6 @@ import './Setup.css';
    she may be nervous about the whole idea. Nothing on these screens should
    sound like a fitness app.
    ========================================================================== */
-
-/** Common dumbbell sizes, in kg. Covers fixed sets and most adjustables. */
-const DUMBBELL_OPTIONS = [2, 3, 4, 5, 6, 8, 10, 12, 15, 17.5, 20, 22.5, 25, 30];
 
 type Stage = 'welcome' | 'dumbbells' | 'bench' | 'bike';
 
