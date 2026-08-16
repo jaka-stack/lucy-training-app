@@ -498,6 +498,25 @@ job.
 
 ---
 
+## Acceptance tests — final state
+
+All verified. The offline test was the last one outstanding and could not be
+checked from the development machine, because the browser used for testing
+blocks service worker registration; Jak confirmed it on a real Android phone
+on 16 August 2026.
+
+| Test | State |
+|---|---|
+| A complete session logged one-handed, no keyboard | Passes, all three days |
+| Everything survives a full app restart | Passes, verified mid-set |
+| Every jargon term explained one tap from where it appears | Passes, enforced by a test |
+| The programme changes correctly between all four blocks, including week 7 | Passes |
+| The progression prompt fires exactly when the PDF's rule says | Passes |
+| Nothing breaks with no internet | **Passes — confirmed on device** |
+| A different set of dumbbells, and no bench, produce a sensible programme | Passes |
+
+---
+
 ## Open questions carried into Phase 1
 
 These were raised at plan stage and answered "pick what you think is best".
