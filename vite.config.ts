@@ -2,7 +2,16 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+/* Stamped into the app at build time so there is a way to tell, on the phone,
+   exactly which version is installed. Without it "did the update land?" is
+   unanswerable from the device. */
+const BUILT_AT = new Date().toISOString();
+
 export default defineConfig({
+  define: {
+    __BUILT_AT__: JSON.stringify(BUILT_AT),
+  },
+
   // base: './' keeps the built app working from any folder — including a
   // GitHub Pages URL like username.github.io/repo-name/ — without extra config.
   base: './',

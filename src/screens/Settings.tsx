@@ -228,6 +228,18 @@ export function Settings({ onClose }: { onClose: () => void }) {
             you save it and nowhere else.
           </p>
         </section>
+
+        <section className="set-block">
+          <h2 className="h2">This version</h2>
+          <p className="prose setup-help">
+            Updated {formatBuilt(__BUILT_AT__)}.
+          </p>
+          <p className="prose setup-help">
+            {navigator.onLine
+              ? 'Online. Updates arrive by themselves when you open the app.'
+              : 'Offline — and working normally, which is how it should be.'}
+          </p>
+        </section>
       </div>
 
       <div className="footer">
@@ -242,6 +254,24 @@ export function Settings({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+}
+
+/** "16 August 2026, 14:32" — readable, and precise enough to tell two builds
+    on the same day apart. */
+function formatBuilt(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return `${d.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })}, ${d.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })}`;
+  } catch {
+    return iso;
+  }
 }
 
 function Row({
