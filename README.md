@@ -57,8 +57,11 @@ know what is coming:
 
 1. Make a free account at [github.com](https://github.com).
 2. Make a new empty **public** repository.
-3. Run two commands I will give you, to upload the code.
-4. In the repository: **Settings → Pages → Source → "GitHub Actions"**.
+3. **Switch Pages on first:** in the repository, go to **Settings → Pages**, and
+   under "Build and deployment" set **Source** to **"GitHub Actions"**. Do this
+   before pushing — the publishing job cannot turn it on for you, and it fails
+   if Pages is off.
+4. Push the code up (`git push`).
 
 GitHub then gives you a web address. Open it on the phone once, and use the
 browser's **Add to Home Screen** option. After that it behaves like a normal app

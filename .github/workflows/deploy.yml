@@ -46,11 +46,13 @@ jobs:
 
       - run: npm run build
 
-      # enablement: true switches GitHub Pages on for the repository if it is
-      # not already on, so there is no manual setup step before the first push.
+      # NOTE: Pages must already be switched on for the repository
+      # (Settings -> Pages -> Source -> "GitHub Actions"). This step used to
+      # pass `enablement: true` to turn it on automatically, but the token this
+      # workflow runs with is not allowed to create the Pages site, so it
+      # failed with a permissions error. Enabling it by hand once is the
+      # reliable route.
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
