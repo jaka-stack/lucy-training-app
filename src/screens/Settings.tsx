@@ -79,7 +79,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
         <button className="set-back" onClick={onClose}>
           Back
         </button>
-        <p className="label">Your kit</p>
+        <p className="label">Settings</p>
       </header>
 
       <div className="body">

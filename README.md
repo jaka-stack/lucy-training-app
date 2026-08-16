@@ -53,8 +53,19 @@ GitHub step below.
 
 ## Putting it on a phone for real
 
-This comes later, once there is more than one screen. The short version, so you
-know what is coming:
+**This is already set up and live at:**
+
+https://jaka-stack.github.io/lucy-training-app/
+
+Open that on the phone and use **Add to Home Screen** (iPhone: the Share
+button; Android: the ⋮ menu → *Install app*). After that it behaves like a
+normal app — its own icon, no browser bars, and it works in aeroplane mode.
+
+To publish a change, run `git push` from this folder. GitHub rebuilds it in
+about a minute, and the phone picks it up next time the app is opened.
+
+<details>
+<summary>How it was set up, if it ever needs doing again</summary>
 
 1. Make a free account at [github.com](https://github.com).
 2. Make a new empty **public** repository.
@@ -64,9 +75,7 @@ know what is coming:
    if Pages is off.
 4. Push the code up (`git push`).
 
-GitHub then gives you a web address. Open it on the phone once, and use the
-browser's **Add to Home Screen** option. After that it behaves like a normal app
-— its own icon, no browser bars, and it works in aeroplane mode.
+</details>
 
 **Why it has to be on the internet once:** phone browsers refuse to install an
 app like this from a plain local address; it has to come from a secure web
@@ -75,8 +84,9 @@ ever goes there — none of it ever leaves the phone.
 
 **A note for iPhones:** if you only bookmark the page instead of using "Add to
 Home Screen", iPhones can delete the app's saved data after about a week of not
-opening it. Adding it to the home screen avoids that. There will also be a
-backup/export button, so nothing is ever only in one place.
+opening it. Adding it to the home screen avoids that. There is also a backup
+button (Settings → Save a backup file), so nothing need ever be in one place
+only.
 
 ---
 
@@ -137,7 +147,7 @@ Things worth trying:
   suggests the next one you have not done, but the order is yours.
 - **Close the browser mid-session and open it again.** It picks up on the exact
   set you were on.
-- **"Your kit"**, top right, changes your equipment answers afterwards without
+- **"Settings"**, top right, changes your equipment answers afterwards without
   touching anything you have logged.
 - **Say you have no bench and no bike**, and watch the exercises swap to sofa,
   floor and standing versions, each explaining the swap.
@@ -175,17 +185,17 @@ that week 1 was meant to feel easy, so the comparison flatters her slightly.
 
 ### Backup
 
-**Your kit → Save a backup file.** There is no cloud, so this is the only way
+**Settings → Save a backup file.** There is no cloud, so this is the only way
 data moves between devices or survives a cleared browser. Worth doing every few
 weeks. The file goes wherever you save it and nowhere else.
 
-**Your kit → Restore from a backup** puts it all back. It refuses any file that
+**Settings → Restore from a backup** puts it all back. It refuses any file that
 did not come from this app rather than half-applying something it does not
 understand.
 
 ### Starting over
 
-**Your kit → Erase everything.** Deliberately awkward: it lists exactly what
+**Settings → Erase everything.** Deliberately awkward: it lists exactly what
 will be lost with live counts, offers the backup first, and then needs a
 two-second press and hold rather than a tap. A tap does nothing, and letting go
 early cancels it. Afterwards the app is back to the first-run questions.

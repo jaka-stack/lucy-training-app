@@ -128,7 +128,7 @@ export function Today({
                 Progress
               </button>
               <button className="today-settings" onClick={onSettings}>
-                Your kit
+                Settings
               </button>
             </div>
           </div>
