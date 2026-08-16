@@ -179,6 +179,17 @@ that week 1 was meant to feel easy, so the comparison flatters her slightly.
 data moves between devices or survives a cleared browser. Worth doing every few
 weeks. The file goes wherever you save it and nowhere else.
 
+**Your kit → Restore from a backup** puts it all back. It refuses any file that
+did not come from this app rather than half-applying something it does not
+understand.
+
+### Starting over
+
+**Your kit → Erase everything.** Deliberately awkward: it lists exactly what
+will be lost with live counts, offers the backup first, and then needs a
+two-second press and hold rather than a tap. A tap does nothing, and letting go
+early cancels it. Afterwards the app is back to the first-run questions.
+
 ### Deliberately not built
 
 Streaks, badges, calories burned, body-fat estimates, weight projections,

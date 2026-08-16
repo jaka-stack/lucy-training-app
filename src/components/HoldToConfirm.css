@@ -1,0 +1,43 @@
+.hold {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  min-height: var(--touch-primary);
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--danger);
+  border-radius: var(--r);
+  background: var(--danger-wash);
+  color: var(--danger);
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+
+  /* Stops a long press popping the text-selection or context menu on mobile
+     part-way through the hold. */
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+/* Fills left to right over the two seconds. Not animated by CSS — it is
+   driven frame by frame from the actual elapsed time, so it never disagrees
+   with when the action fires. */
+.hold-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: var(--danger);
+}
+
+.hold-label {
+  position: relative; /* sits above the fill */
+}
+
+/* Once the bar has passed under the text, the text has to flip to stay
+   readable. mix-blend-mode does that without knowing where the bar is. */
+.hold.is-holding .hold-label {
+  mix-blend-mode: difference;
+  color: #fff;
+}

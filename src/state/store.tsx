@@ -35,6 +35,7 @@ type Action =
     }
   | { type: 'declineProgression'; exerciseId: string }
   | { type: 'addCheckIn'; weightKg?: number; waistCm?: number }
+  | { type: 'eraseEverything' }
   | { type: 'replaceAll'; state: AppState };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -220,6 +221,13 @@ function reducer(state: AppState, action: Action): AppState {
           },
         ],
       };
+
+    // Back to the state of a phone that has never opened the app. Returning
+    // INITIAL_STATE rather than deleting keys means there is no chance of a
+    // half-erased state surviving — settings goes null, so the app lands on
+    // the first-run questions.
+    case 'eraseEverything':
+      return INITIAL_STATE;
 
     case 'replaceAll':
       return action.state;

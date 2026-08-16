@@ -35,6 +35,33 @@
   cursor: pointer;
 }
 
+/* The only red button in the app, and it opens a confirmation rather than
+   doing anything itself. */
+.set-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.erase-list {
+  margin: var(--s4) 0 var(--s4) var(--s5);
+  color: var(--chalk);
+}
+
+.erase-list li {
+  margin-bottom: var(--s2);
+}
+
+.erase-list strong {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.erase-action {
+  margin-top: var(--s6);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--line-soft);
+}
+
 .set-warn {
   margin-top: var(--s3);
   font-size: var(--t-sm);

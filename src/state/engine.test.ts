@@ -705,6 +705,24 @@ const squat = DAY_1.exercises.find((e) => e.exerciseId === 'goblet-squat')!;
   check('no history means no completed weeks', completedWeeks([]).size, 0);
 }
 
+/* --- erasing everything -------------------------------------------------- */
+
+{
+  const { INITIAL_STATE } = await import('./types');
+
+  // Whatever else changes, erasing must leave nothing behind. A half-erased
+  // state — settings gone but history kept, say — would strand her in a
+  // first-run flow on top of old data.
+  ok('the empty state has no settings', INITIAL_STATE.settings === null);
+  check('the empty state has no history', INITIAL_STATE.history.length, 0);
+  check('the empty state has no ladder steps',
+    Object.keys(INITIAL_STATE.adjustments).length, 0);
+  check('the empty state has no readings', INITIAL_STATE.checkIns.length, 0);
+  check('the empty state has no half-finished session',
+    INITIAL_STATE.inProgress, null);
+  check('the empty state starts at week 1', INITIAL_STATE.currentWeek, 1);
+}
+
 /* --- every jargon term on screen has a definition ------------------------ */
 
 /* The requirement is that any term a beginner would not know explains itself

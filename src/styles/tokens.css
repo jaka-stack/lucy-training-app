@@ -52,6 +52,18 @@
   --finished: #6fae7d;
   --finished-wash: rgba(111, 174, 125, 0.12);
 
+  /* --- DANGER -------------------------------------------------------------
+     The second and last exception to the one-accent rule, for the same kind
+     of reason as --finished: it carries a meaning ember must not.
+
+     Ember means "the thing you do next" — an inviting colour. The one action
+     in this app that can destroy twelve weeks of her training must not look
+     inviting, and must not look like every other button. This red appears
+     ONLY on the erase-everything confirmation. Nowhere else, ever — not on
+     validation, not on errors, not on a missed session.                      */
+  --danger: #e2564a;
+  --danger-wash: rgba(226, 86, 74, 0.12);
+
   /* --- TYPE ---------------------------------------------------------------
      Two faces, doing two jobs.
      Archivo   — display. Grotesque, heavy, tightenable. Used for numbers and

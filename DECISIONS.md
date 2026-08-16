@@ -552,6 +552,39 @@ Where it appears: the three day cells on the Today screen, the twelve-week
 grid, and the day picker. The current week still overrides the finished
 styling, so "where am I" stays the loudest thing in the grid.
 
+### D43. Erasing everything: press and hold, not a yes/no box
+
+Jak asked for a clear-data option guarded against accidents.
+
+**Why not a confirm box:** a yes/no dialog is dismissed by reflex. The muscle
+memory for "tap the right-hand button" is strong enough that people confirm
+things they did not read, and the cost here is twelve weeks of her training
+with no copy anywhere.
+
+**What it does instead**, three obstacles deep:
+
+1. The button in Settings only *opens* something. It never erases.
+2. The sheet lists what will be lost **by name and live count** — "4 logged
+   sessions, 1 reading, 1 step up the ladder, your kit answers" — rather than a
+   vague "all data". It also states plainly that nothing is kept anywhere else,
+   so there is nothing to restore from.
+3. A **backup button sits above the destructive one**, so the safe option is
+   the one she meets first.
+4. The action itself needs a **two-second press and hold**. A tap does nothing.
+   Releasing early cancels and resets the bar.
+
+The filling bar is driven frame by frame from real elapsed time, so it can
+never disagree with when the action fires. It also means a hold does not
+progress while the app is in the background, which is the right behaviour.
+
+**One more colour, and the last:** `--danger` red, used *only* here. Ember means
+"the thing you do next" and is deliberately inviting; the one action that can
+destroy her training must not look inviting, and must not look like every other
+button. Like `--finished`, the restriction is written into the tokens file.
+
+**Verified:** a plain tap leaves everything intact; an 800 ms hold cancels and
+resets; a full hold erases and returns to the first-run questions.
+
 ---
 
 ## Acceptance tests — final state

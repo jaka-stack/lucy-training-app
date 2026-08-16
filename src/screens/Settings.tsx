@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useStore } from '../state/store';
 import { DUMBBELL_OPTIONS } from '../data/kit';
 import { downloadBackup, parseBackup } from '../state/storage';
+import { Sheet } from '../components/Sheet';
+import { HoldToConfirm } from '../components/HoldToConfirm';
 import './Setup.css';
 import './Settings.css';
 
@@ -36,6 +38,8 @@ export function Settings({ onClose }: { onClose: () => void }) {
   const [bike, setBike] = useState(current.equipment.hasBike);
   const [cues, setCues] = useState(current.cues);
   const [restoreError, setRestoreError] = useState<string | null>(null);
+  const [showErase, setShowErase] = useState(false);
+  const [backedUp, setBackedUp] = useState(false);
 
   const changed =
     JSON.stringify(dumbbells.slice().sort((a, b) => a - b)) !==
@@ -67,6 +71,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
   }
 
   const sessionCount = state.history.length;
+  const adjustmentCount = Object.keys(state.adjustments).length;
 
   return (
     <div className="screen">
@@ -230,6 +235,21 @@ export function Settings({ onClose }: { onClose: () => void }) {
         </section>
 
         <section className="set-block">
+          <h2 className="h2">Erase everything</h2>
+          <p className="prose setup-help">
+            Wipes this phone's copy back to the very beginning — every logged
+            session, your kit answers, everything. There is no undo, and no
+            copy anywhere else.
+          </p>
+          <button
+            className="btn-quiet set-action set-danger"
+            onClick={() => setShowErase(true)}
+          >
+            Erase everything…
+          </button>
+        </section>
+
+        <section className="set-block">
           <h2 className="h2">This version</h2>
           <p className="prose setup-help">
             Updated {formatBuilt(__BUILT_AT__)}.
@@ -252,6 +272,69 @@ export function Settings({ onClose }: { onClose: () => void }) {
           </p>
         )}
       </div>
+
+      {/* Deliberately effortful. Everything it can destroy is listed by name
+          and number, a backup is offered first, and the action itself needs a
+          two-second hold rather than a tap. */}
+      <Sheet
+        open={showErase}
+        onClose={() => setShowErase(false)}
+        kicker="This cannot be undone"
+        title="Erase everything?"
+      >
+        <p className="lead">You would lose:</p>
+
+        <ul className="erase-list">
+          <li>
+            <strong>{sessionCount}</strong> logged{' '}
+            {sessionCount === 1 ? 'session' : 'sessions'}
+          </li>
+          <li>
+            <strong>{state.checkIns.length}</strong> weight and waist{' '}
+            {state.checkIns.length === 1 ? 'reading' : 'readings'}
+          </li>
+          <li>
+            every step up the ladder you have earned
+            {adjustmentCount > 0 && <> ({adjustmentCount} so far)</>}
+          </li>
+          <li>your dumbbells, bench and bike answers</li>
+        </ul>
+
+        <p>
+          The app would go back to the first-run questions, as though it had
+          never been opened. Nothing is kept anywhere else — not on GitHub, not
+          in any account — so there is nothing to restore from afterwards.
+        </p>
+
+        <div className="block">
+          <span className="label">Take the backup first</span>
+          <p>
+            Thirty seconds now, and everything above can be put back later.
+          </p>
+          <button
+            className="btn-quiet set-action"
+            onClick={() => {
+              downloadBackup(state);
+              setBackedUp(true);
+            }}
+          >
+            {backedUp ? 'Backup saved — save another' : 'Save a backup file'}
+          </button>
+        </div>
+
+        <div className="erase-action">
+          <HoldToConfirm
+            label="Hold to erase everything"
+            holdingLabel="Keep holding…"
+            onConfirm={() => {
+              dispatch({ type: 'eraseEverything' });
+            }}
+          />
+          <button className="btn-text" onClick={() => setShowErase(false)}>
+            Keep my data — go back
+          </button>
+        </div>
+      </Sheet>
     </div>
   );
 }
