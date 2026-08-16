@@ -16,6 +16,25 @@ export type Settings = {
   startedOn: string;
   /** Sound and vibration on rest/interval transitions. */
   cues: boolean;
+  /**
+   * The weekly weight and waist log. OFF by default, and deliberately so —
+   * it is the one part of this app that can turn into a daily habit of
+   * checking a number, which the programme itself warns against.
+   */
+  checkInEnabled?: boolean;
+};
+
+/**
+ * One weigh-in or measurement. Several can share a week; the app only ever
+ * shows the weekly average, because §9 is explicit that "a single morning's
+ * weight is close to meaningless" and only weekly averages should be compared.
+ */
+export type CheckIn = {
+  /** ISO date, day resolution. */
+  date: string;
+  week: number;
+  weightKg?: number;
+  waistCm?: number;
 };
 
 /** One logged working set. */
@@ -83,6 +102,8 @@ export type AppState = {
   inProgress: InProgress | null;
   /** Ladder steps applied per exercise, keyed by exercise id. */
   adjustments: Record<string, Adjustments>;
+  /** Weekly weigh-ins and measurements. Empty unless she turns them on. */
+  checkIns: CheckIn[];
 };
 
 export const INITIAL_STATE: AppState = {
@@ -91,4 +112,5 @@ export const INITIAL_STATE: AppState = {
   history: [],
   inProgress: null,
   adjustments: {},
+  checkIns: [],
 };

@@ -280,6 +280,37 @@ export const DAY_3: Day = {
   ],
 };
 
+/* --- Week 12, session 3 — the retest ------------------------------------ */
+
+/*
+  §7: "Week 12, session 3 is your retest. Same exercises, back to Block 1 rest
+  periods, and you work up to the heaviest set of 8 you can do with clean form
+  on the goblet squat, one-arm row and shoulder press."
+
+  A CONFLICT IN THE SOURCE, resolved here. Those three lifts are not Day 3
+  exercises — the goblet squat and shoulder press are Day 1, the one-arm row is
+  Day 2. Day 3 is split squats, chest-supported rows, B-stance deadlifts, flys
+  and arms. And the check-in log on p.21 asks for FIVE lifts, adding the hip
+  thrust and the push-up, while §7 names three.
+
+  Decision: week 12's Day 3 becomes a retest session containing the three lifts
+  §7 names, followed by Day 3's arm work so it still feels like a session
+  rather than three heavy singles and a walk home. The hip thrust and push-up
+  are shown from her logs instead of being retested — block 4 has her doing
+  single-leg hip thrusts with 5 kg, so a heavy bilateral retest would be
+  measuring something she has not trained for three weeks.
+
+  See DECISIONS.md D32.
+*/
+export const RETEST_LIFTS = [
+  'goblet-squat',
+  'one-arm-row',
+  'seated-shoulder-press',
+] as const;
+
+/** The lifts that get shown as "your best logged" rather than retested. */
+export const RETEST_SHOWN_ONLY = ['hip-thrust', 'incline-pushup'] as const;
+
 export const DAYS: Day[] = [DAY_1, DAY_2, DAY_3];
 
 export function dayById(id: string): Day {

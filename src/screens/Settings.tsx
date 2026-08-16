@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
 import { DUMBBELL_OPTIONS } from '../data/kit';
+import { downloadBackup, parseBackup } from '../state/storage';
 import './Setup.css';
 import './Settings.css';
 
@@ -34,6 +35,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
   );
   const [bike, setBike] = useState(current.equipment.hasBike);
   const [cues, setCues] = useState(current.cues);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
 
   const changed =
     JSON.stringify(dumbbells.slice().sort((a, b) => a - b)) !==
@@ -179,6 +181,51 @@ export function Settings({ onClose }: { onClose: () => void }) {
           <p className="prose setup-help">
             Changing your kit above does not alter anything already logged —
             past sessions record what you actually lifted.
+          </p>
+
+          {/* There is no cloud behind this app, so a cleared browser would be
+              total data loss. This makes that an annoyance instead. */}
+          <button
+            className="btn-quiet set-action"
+            onClick={() => downloadBackup(state)}
+          >
+            Save a backup file
+          </button>
+
+          <label className="btn-quiet set-action set-file">
+            Restore from a backup
+            <input
+              type="file"
+              accept="application/json,.json"
+              className="sr-only"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = ''; // let the same file be picked again
+                if (!file) return;
+
+                const result = parseBackup(await file.text());
+                if (!result.ok) {
+                  setRestoreError(result.reason);
+                  return;
+                }
+                if (
+                  !confirm(
+                    'Restoring replaces everything currently in the app — every logged session and setting. Carry on?',
+                  )
+                )
+                  return;
+
+                dispatch({ type: 'replaceAll', state: result.state });
+                onClose();
+              }}
+            />
+          </label>
+
+          {restoreError && <p className="set-warn">{restoreError}</p>}
+
+          <p className="prose setup-help">
+            Worth doing every few weeks. The file is yours — it goes wherever
+            you save it and nowhere else.
           </p>
         </section>
       </div>

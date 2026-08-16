@@ -516,6 +516,161 @@ const squat = DAY_1.exercises.find((e) => e.exerciseId === 'goblet-squat')!;
   check('sets are capped at 4', a1?.kind === 'set' ? a1.set.totalSets : null, 4);
 }
 
+/* --- the week 12 retest -------------------------------------------------- */
+
+{
+  const steps = buildSession(DAY_3, 12, fullKit, noHistory);
+  const retests = steps.filter((s) => s.kind === 'retest');
+
+  check('the retest has three lifts', retests.length, 3);
+  check('and they are the three the programme names',
+    retests.map((s) => (s.kind === 'retest' ? s.exerciseId : '')),
+    ['goblet-squat', 'one-arm-row', 'seated-shoulder-press']);
+
+  ok('the retest is introduced before it starts',
+    steps.findIndex((s) => s.kind === 'retestIntro') <
+    steps.findIndex((s) => s.kind === 'retest'));
+
+  // Day 3's arm work still follows, so the last session is not three heavy
+  // attempts and a walk home.
+  const armSets = steps.filter((s) => s.kind === 'set');
+  ok('the arm work still happens', armSets.length > 0);
+  ok('and it is only the C group',
+    armSets.every((s) => s.kind === 'set' && s.set.group === 'C'));
+
+  // Rest goes back to Block 1 length for the retest (§7).
+  const rests = steps.filter((s) => s.kind === 'rest');
+  ok('retest rests are back to block 1 length',
+    rests.every((s) => s.kind === 'rest' && s.seconds === 90));
+
+  // Only week 12 Day 3 is a retest.
+  ok('week 12 day 1 is a normal session',
+    !buildSession(DAY_1, 12, fullKit, noHistory).some((s) => s.kind === 'retest'));
+  ok('week 11 day 3 is a normal session',
+    !buildSession(DAY_3, 11, fullKit, noHistory).some((s) => s.kind === 'retest'));
+}
+
+{
+  // The retest shows her week 1 numbers for an honest comparison.
+  const history = [
+    sessionWith(1, 'day1', 'goblet-squat', [10, 10], 6, 15),
+    sessionWith(6, 'day1', 'goblet-squat', [12, 12, 12], 7, 20),
+  ];
+  const steps = buildSession(DAY_3, 12, fullKit, history);
+  const squatTest = steps.find(
+    (s) => s.kind === 'retest' && s.exerciseId === 'goblet-squat',
+  );
+  ok('the retest carries her earliest numbers, not her latest',
+    squatTest?.kind === 'retest' &&
+    squatTest.weekOne?.weight === 15 &&
+    squatTest.weekOne?.reps === 10);
+}
+
+/* --- weekly averages, never a single day --------------------------------- */
+
+{
+  const { weeklySummaries, weekOnWeek } = await import('./checkins');
+
+  const one = weeklySummaries([{ date: '2026-01-01', week: 1, weightKg: 72 }]);
+  check('a single reading is not shown as a weekly average',
+    one[0].weightKg, undefined);
+  check('but it is acknowledged as too few', one[0].weightTooFew, true);
+
+  const two = weeklySummaries([
+    { date: '2026-01-01', week: 1, weightKg: 72 },
+    { date: '2026-01-03', week: 1, weightKg: 71 },
+  ]);
+  check('two readings average', two[0].weightKg, 71.5);
+
+  const across = weeklySummaries([
+    { date: '2026-01-01', week: 1, weightKg: 72 },
+    { date: '2026-01-03', week: 1, weightKg: 71 },
+    { date: '2026-01-08', week: 2, weightKg: 71 },
+    { date: '2026-01-10', week: 2, weightKg: 70 },
+  ]);
+  check('weeks are summarised separately', across.length, 2);
+
+  const change = weekOnWeek([
+    { date: '2026-01-01', week: 1, weightKg: 72 },
+    { date: '2026-01-03', week: 1, weightKg: 71 },
+    { date: '2026-01-08', week: 2, weightKg: 71 },
+    { date: '2026-01-10', week: 2, weightKg: 70 },
+  ]);
+  check('week-on-week compares averages', change?.change, -1);
+  check('a single week gives no comparison',
+    weekOnWeek([{ date: '2026-01-01', week: 1, weightKg: 72 }]), null);
+}
+
+/* --- backup round-trip ---------------------------------------------------- */
+
+{
+  const { parseBackup } = await import('./storage');
+
+  const state = {
+    settings: {
+      equipment: fullKit,
+      startedOn: new Date().toISOString(),
+      cues: true,
+    },
+    currentWeek: 5,
+    history: [sessionWith(4, 'day1', 'goblet-squat', [10, 10, 10], 7, 15)],
+    inProgress: null,
+    adjustments: { 'goblet-squat': { bonusReps: 5 } },
+    checkIns: [],
+  };
+
+  const file = JSON.stringify({
+    marker: 'trainer-backup',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    state,
+  });
+
+  const restored = parseBackup(file);
+  ok('a backup file restores', restored.ok);
+  if (restored.ok) {
+    check('history survives the round trip', restored.state.history.length, 1);
+    check('the week survives', restored.state.currentWeek, 5);
+    check('ladder steps survive',
+      restored.state.adjustments['goblet-squat'].bonusReps, 5);
+    check('a stale half-finished session is not restored',
+      restored.state.inProgress, null);
+  }
+
+  ok('a file from somewhere else is refused',
+    !parseBackup('{"hello":"world"}').ok);
+  ok('nonsense is refused', !parseBackup('not json at all').ok);
+}
+
+/* --- progress -------------------------------------------------------------- */
+
+{
+  const { exerciseProgress, daysSinceLastSession } = await import('./progress');
+
+  const history = [
+    sessionWith(1, 'day1', 'goblet-squat', [8, 8, 8], 6, 15),
+    sessionWith(6, 'day1', 'goblet-squat', [12, 12, 12], 7, 20),
+  ];
+  const p = exerciseProgress(history).find((x) => x.exerciseId === 'goblet-squat');
+  ok('progress spots a real improvement', p?.improved === true);
+  ok('and describes it in plain numbers',
+    (p?.sentence ?? '').includes('15') && (p?.sentence ?? '').includes('20'));
+
+  // One session is not a comparison.
+  const single = [sessionWith(1, 'day1', 'goblet-squat', [8, 8, 8], 6, 15)];
+  check('one session shows nothing', exerciseProgress(single).length, 0);
+
+  // Same weight, more reps, still counts.
+  const reps = [
+    sessionWith(1, 'day1', 'goblet-squat', [8, 8, 8], 6, 15),
+    sessionWith(3, 'day1', 'goblet-squat', [12, 12, 12], 6, 15),
+  ];
+  ok('more reps at the same weight counts as progress',
+    exerciseProgress(reps)[0].improved === true);
+
+  check('no history means no "days since"', daysSinceLastSession([]), null);
+}
+
 /* --- every jargon term on screen has a definition ------------------------ */
 
 /* The requirement is that any term a beginner would not know explains itself

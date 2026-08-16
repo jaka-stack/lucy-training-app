@@ -4,11 +4,12 @@ import { Setup } from './screens/Setup';
 import { Today } from './screens/Today';
 import { Session } from './screens/Session';
 import { Settings } from './screens/Settings';
+import { Progress } from './screens/Progress';
 
 /* Which screen is showing. Deliberately not a router — there are no URLs to
    share and no back button to get wrong, and a session that cannot be
    navigated away from by accident is the point. */
-type View = 'today' | 'session' | 'settings';
+type View = 'today' | 'session' | 'settings' | 'progress';
 
 export function App() {
   const { state } = useStore();
@@ -25,10 +26,15 @@ export function App() {
     return <Settings onClose={() => setView('today')} />;
   }
 
+  if (view === 'progress') {
+    return <Progress onClose={() => setView('today')} />;
+  }
+
   return (
     <Today
       onStart={() => setView('session')}
       onSettings={() => setView('settings')}
+      onProgress={() => setView('progress')}
     />
   );
 }

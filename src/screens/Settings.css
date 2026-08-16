@@ -22,6 +22,19 @@
   border-top: 1px solid var(--line-soft);
 }
 
+.set-action {
+  margin-top: var(--s4);
+}
+
+/* A file input styled as a button. The input itself is visually hidden but
+   still focusable and still announced, so the label works for everyone. */
+.set-file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .set-warn {
   margin-top: var(--s3);
   font-size: var(--t-sm);

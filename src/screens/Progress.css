@@ -1,0 +1,150 @@
+.prog-empty {
+  margin-top: var(--s6);
+}
+
+.prog-empty .prose {
+  margin-top: var(--s4);
+}
+
+.prog-section {
+  margin-top: var(--s6);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--line-soft);
+}
+
+/* --- totals ------------------------------------------------------------- */
+
+.prog-totals {
+  display: flex;
+  gap: var(--s2);
+  margin-top: var(--s3);
+}
+
+.stat {
+  flex: 1;
+  background: var(--ground-raised);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  padding: var(--s3);
+  text-align: center;
+}
+
+.stat-n {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-xl);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 84;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--chalk);
+}
+
+.stat-l {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+  margin-top: var(--s2);
+}
+
+/* A gap in training is stated as a fact and nothing more. No warning colour,
+   no broken streak, no "get back on track". */
+.prog-gap {
+  margin-top: var(--s4);
+  font-size: var(--t-sm);
+  color: var(--chalk-dim);
+}
+
+/* --- lists -------------------------------------------------------------- */
+
+.prog-list {
+  list-style: none;
+  margin-top: var(--s3);
+}
+
+.prog-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.prog-ex {
+  font-size: var(--t-md);
+  color: var(--chalk);
+}
+
+.prog-change {
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk-dim);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Improvement is ember — the one thing on this screen worth the eye going to
+   first. Not green: this is not a reward, it is the news. */
+.prog-change.is-up {
+  color: var(--ember);
+}
+
+.prog-note {
+  margin-top: var(--s4);
+  font-size: var(--t-sm);
+}
+
+.prog-enable {
+  margin-top: var(--s4);
+}
+
+.prog-why {
+  display: block;
+  width: 100%;
+  margin-top: var(--s3);
+  min-height: 44px;
+  font-size: var(--t-sm);
+  color: var(--chalk-dim);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--ember);
+  text-underline-offset: 4px;
+}
+
+/* --- the reading form --------------------------------------------------- */
+
+.field {
+  display: block;
+  margin-top: var(--s5);
+}
+
+.field-input {
+  display: block;
+  width: 100%;
+  margin-top: var(--s2);
+  min-height: var(--touch-min);
+  padding: 0 var(--s4);
+  background: var(--ground-well);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: var(--chalk);
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.field-input:focus {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+.field-save {
+  margin-top: var(--s5);
+}

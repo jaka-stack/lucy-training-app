@@ -86,10 +86,15 @@
   margin-top: 2px;
 }
 
+.today-links {
+  display: flex;
+  gap: var(--s4);
+  justify-content: flex-end;
+}
+
 .today-settings {
   display: block;
   margin-top: var(--s2);
-  margin-left: auto;
   font-size: var(--t-sm);
   font-weight: 600;
   color: var(--chalk-dim);

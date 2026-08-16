@@ -400,6 +400,104 @@ Accepting a step changes the next session, not a note somewhere:
 
 ---
 
+## Phase 3 — progress, the retest, check-ins and backup
+
+### D32. The week 12 retest — resolving the source's conflict
+
+§7 says week 12's third session is a retest on the goblet squat, one-arm row
+and shoulder press. **None of those three is a Day 3 exercise** — two are Day 1,
+one is Day 2. Meanwhile the check-in log on p.21 asks for five lifts, adding
+the hip thrust and the push-up.
+
+**Decision:** week 12's Day 3 becomes a retest session containing the three
+lifts §7 names, at Block 1 rest periods as §7 requires, followed by Day 3's arm
+work so the last session is not three heavy attempts and a walk home.
+
+The hip thrust and push-up are **shown from her logs** rather than retested.
+Block 4 has her doing single-leg hip thrusts with 5 kg, so a heavy bilateral
+retest would measure something she has not trained for three weeks.
+
+### D33. The retest comparison is presented honestly, not flatteringly
+
+Week 1 sets were submaximal at RPE 5–6 — deliberately easy. The retest is a
+near-limit set of 8. Those are not like for like, and computing a percentage
+gain from them would overstate it.
+
+So the app shows both numbers with their context — "Back at the start: 15 kg ×
+10, and that was meant to feel easy" — and says outright on the Progress screen
+that the comparison flatters her slightly.
+
+**Caught in testing:** the first version coloured every retest row as an
+improvement and said "a real change, and a big one" underneath. On a lift that
+did not move, that reads as either a lie or a rebuke. Now only genuine
+improvements are marked, and the note adds that a lift which did not move is
+not a failure.
+
+### D34. Weight is only ever shown as a weekly average, and never below two readings
+
+§9: "only compare the weekly average to the previous weekly average. A single
+morning's weight is close to meaningless."
+
+Taken literally. She can log a weight any day. The app **never shows a single
+day's number back to her** — not in a list, not in a chart, not as a "latest".
+A week with only one reading displays "one reading — not enough to average",
+because an average of one number is just the daily number wearing a hat.
+
+No goal weight, no projection, no trend arrow, no daily chart. Each of those
+turns a weekly check into a daily habit.
+
+Waist is shown from a single reading, deliberately: it does not swing with food,
+salt and water the way the scale does.
+
+### D35. The weight log is off by default and has to be turned on
+
+It is the one part of this app that can become a compulsion. It sits at the
+bottom of the Progress screen, below the training, and when off it says why she
+does not need it.
+
+### D36. Progress leads with strength, not the scale
+
+§9 says strength climbs fastest for a beginner, fitness shows by week 3–4, and
+the scale can rise for the first three weeks while everything is going right.
+So the Progress screen leads with what she can lift now that she could not
+lift before, and the scale is a footnote.
+
+Improvement is marked in ember, not green — this is the news, not a reward.
+
+### D37. A gap in training is stated as a fact and nothing else
+
+"Last session was 11 days ago. Pick up wherever you like — nothing is lost, and
+there is nothing to make up." No warning colour, no broken streak, no "get back
+on track". Shown only after 7 days, and never as a notification.
+
+### D38. Backup is a file she owns
+
+With no cloud, a cleared browser is total data loss. Export writes a plain JSON
+file; restore reads one back, but refuses anything without the app's marker
+rather than half-applying a file it does not understand, and never restores
+straight into a half-finished session because the file could be weeks old.
+
+### D39. Exercise illustrations: not shipped, and why
+
+Promised at plan stage with the caveat that I would say so if they came out
+worse than the words.
+
+**They would have.** Twenty hand-coded SVG figures that are anatomically
+legible enough to correct someone's form is not something I can do to a
+standard worth shipping — a vague drawing of a hinge is worse than the sentence
+"push your hips back, dumbbells sliding down the front of your thighs, back
+flat", because it invites her to copy a shape that is not quite right.
+
+What is there instead: the written cue and the common mistake, always offline,
+one tap from the exercise name at the moment she is standing over it, plus the
+video search link the PDF itself uses when she has a connection.
+
+If illustrations are wanted, the right answer is photographs or a short clip of
+someone actually performing the movement — which is a content job, not a code
+job.
+
+---
+
 ## Open questions carried into Phase 1
 
 These were raised at plan stage and answered "pick what you think is best".

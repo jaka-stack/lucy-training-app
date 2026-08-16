@@ -1,4 +1,6 @@
 import {
+  DAYS,
+  RETEST_LIFTS,
   bikeFinisher,
   planForWeek,
   type BikePlan,
@@ -90,6 +92,16 @@ export type Step =
   | { kind: 'rest'; seconds: number; nextLabel: string }
   | { kind: 'bike'; plan: BikePlan }
   | { kind: 'cooldown' }
+  | { kind: 'retestIntro' }
+  | {
+      kind: 'retest';
+      exercise: ResolvedExercise;
+      exerciseId: string;
+      weightStyle: 'one' | 'pair' | 'none';
+      /** Her week 1 numbers on this lift, for an honest comparison. */
+      weekOne: { weight: number | null; reps: number } | null;
+      startWeight: number | null;
+    }
   | { kind: 'summary' };
 
 /* --- weights ------------------------------------------------------------ */
@@ -281,6 +293,28 @@ function formatLastTime(
 
 /* --- building the session ----------------------------------------------- */
 
+/** Is this the week 12 retest session? (§7 — week 12, session 3.) */
+export function isRetestSession(dayId: string, week: number): boolean {
+  return week === 12 && dayId === 'day3';
+}
+
+/** Her earliest logged set on a lift, for the week 1 comparison. */
+function earliestPerformance(
+  exerciseId: string,
+  history: SessionRecord[],
+): { weight: number | null; reps: number } | null {
+  for (const session of history) {
+    const sets = session.sets.filter((s) => s.exerciseId === exerciseId);
+    if (sets.length > 0) {
+      const best = [...sets].sort(
+        (a, b) => (b.weight ?? 0) - (a.weight ?? 0) || b.reps - a.reps,
+      )[0];
+      return { weight: best.weight, reps: best.reps };
+    }
+  }
+  return null;
+}
+
 export function buildSession(
   day: Day,
   week: number,
@@ -293,6 +327,77 @@ export function buildSession(
   const steps: Step[] = [];
 
   steps.push({ kind: 'warmup' });
+
+  // The week 12 retest replaces the A and B pairs with three max-ish lifts,
+  // then keeps Day 3's arm work so it still feels like a session.
+  if (isRetestSession(day.id, week)) {
+    steps.push({ kind: 'retestIntro' });
+
+    for (const id of RETEST_LIFTS) {
+      const pe = DAYS.flatMap((d) => d.exercises).find(
+        (e) => e.exerciseId === id,
+      );
+      const last = lastPerformanceFor(id, history);
+      steps.push({
+        kind: 'retest',
+        exerciseId: id,
+        exercise: resolveExercise(id, bench),
+        weightStyle: pe?.weightStyle ?? 'one',
+        weekOne: earliestPerformance(id, history),
+        startWeight:
+          last?.weight ??
+          (pe?.startWeight != null
+            ? snapToOwned(pe.startWeight, equipment.dumbbells)
+            : null),
+      });
+      steps.push({
+        kind: 'rest',
+        // "back to Block 1 rest periods" (§7)
+        seconds: 90,
+        nextLabel: 'Next lift',
+      });
+    }
+
+    // Day 3's C group, unchanged, so the last session is not just three
+    // heavy attempts.
+    const cGroup = day.exercises.filter((e) => e.group === 'C');
+    for (let setNumber = 1; setNumber <= plan.setsC; setNumber++) {
+      for (const pe of cGroup) {
+        const eff = effectivePrescription(pe, plan);
+        const adj = adjustments[pe.exerciseId];
+        const range = effectiveRange(eff.seconds ?? eff.reps, adj);
+        steps.push({
+          kind: 'set',
+          set: {
+            slot: pe.slot,
+            group: 'C',
+            exercise: resolveExercise(pe.exerciseId, bench),
+            setNumber,
+            totalSets: plan.setsC,
+            reps: eff.seconds ? eff.reps : range,
+            seconds: eff.seconds ? range : undefined,
+            perSide: eff.perSide,
+            suggestedWeight: suggestWeight(pe, plan, equipment, history, eff),
+            weightStyle: eff.weightStyle,
+            expectedReps: range[0],
+            targetRpe: plan.targetRpe,
+            tempo: 'Controlled, about 2 seconds down',
+            lastTime: formatLastTime(
+              lastPerformanceFor(pe.exerciseId, history),
+              eff.weightStyle,
+            ),
+          },
+        });
+      }
+      if (setNumber < plan.setsC)
+        steps.push({ kind: 'rest', seconds: 90, nextLabel: 'Next round' });
+    }
+
+    steps.push({ kind: 'bike', plan: bikeFinisher(day.id, week) });
+    steps.push({ kind: 'cooldown' });
+    steps.push({ kind: 'summary' });
+    return steps;
+  }
 
   const groups: ('A' | 'B' | 'C')[] = ['A', 'B', 'C'];
 

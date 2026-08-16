@@ -19,9 +19,11 @@ import './Today.css';
 export function Today({
   onStart,
   onSettings,
+  onProgress,
 }: {
   onStart: () => void;
   onSettings: () => void;
+  onProgress: () => void;
 }) {
   const { state, dispatch } = useStore();
   const [showWeeks, setShowWeeks] = useState(false);
@@ -102,9 +104,14 @@ export function Today({
             </p>
             {plan.isDeload && <p className="today-tag is-deload">Easy week</p>}
             {plan.isRetestWeek && <p className="today-tag">Final week</p>}
-            <button className="today-settings" onClick={onSettings}>
-              Your kit
-            </button>
+            <div className="today-links">
+              <button className="today-settings" onClick={onProgress}>
+                Progress
+              </button>
+              <button className="today-settings" onClick={onSettings}>
+                Your kit
+              </button>
+            </div>
           </div>
         </header>
 

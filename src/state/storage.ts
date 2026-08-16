@@ -37,6 +37,7 @@ export function load(): AppState {
       ...parsed,
       history: parsed.history ?? [],
       adjustments: parsed.adjustments ?? {},
+      checkIns: parsed.checkIns ?? [],
     };
   } catch {
     // A corrupt or unreadable save should not stop her training. Start clean
@@ -54,10 +55,77 @@ export function save(state: AppState): void {
   }
 }
 
-/** Everything she has, as a file she can keep. The backup for a device with
-    no cloud behind it. */
-export function exportBlob(state: AppState): Blob {
-  return new Blob([JSON.stringify(state, null, 2)], {
+/* --- backup ---------------------------------------------------------------
+   There is no cloud behind this app, so a cleared browser is total data loss.
+   These two make that an annoyance rather than a catastrophe.               */
+
+const FILE_MARKER = 'trainer-backup';
+
+/** Everything she has, as a file she can keep. */
+export function downloadBackup(state: AppState): void {
+  const payload = {
+    marker: FILE_MARKER,
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    state,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
     type: 'application/json',
   });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const day = new Date().toISOString().slice(0, 10);
+  a.download = `training-backup-${day}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Release the blob on the next tick, once the download has started.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export type ImportResult =
+  | { ok: true; state: AppState }
+  | { ok: false; reason: string };
+
+/**
+ * Reads a backup file. Deliberately strict: restoring overwrites everything
+ * she has, so a file we do not recognise is refused rather than half-applied.
+ */
+export function parseBackup(text: string): ImportResult {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { ok: false, reason: 'That file is not readable.' };
+  }
+
+  const p = parsed as { marker?: string; state?: Partial<AppState> };
+  if (p?.marker !== FILE_MARKER || !p.state) {
+    return {
+      ok: false,
+      reason: 'That does not look like a backup from this app.',
+    };
+  }
+
+  const s = p.state;
+  if (!s.settings || !Array.isArray(s.history)) {
+    return { ok: false, reason: 'That backup is missing its contents.' };
+  }
+
+  return {
+    ok: true,
+    state: {
+      ...INITIAL_STATE,
+      ...s,
+      history: s.history,
+      adjustments: s.adjustments ?? {},
+      checkIns: s.checkIns ?? [],
+      // Never restore straight back into a half-finished session — the file
+      // could be weeks old.
+      inProgress: null,
+    } as AppState,
+  };
 }

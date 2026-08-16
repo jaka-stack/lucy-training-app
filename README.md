@@ -3,8 +3,8 @@
 A phone app built from the 12-week home dumbbell programme. It works offline,
 keeps everything on the phone, and needs no account.
 
-**Right now this is Phase 3 of 4** — all three training days work, for all
-twelve weeks, and the app applies the progression rule itself. See
+**This is now complete** — all twelve weeks, all three days, the progression
+rule, the week 12 retest, progress, backup, and it works offline. See
 [What's here so far](#whats-here-so-far).
 
 ---
@@ -154,10 +154,43 @@ big jump — 15 kg to 20 kg is a third heavier — it offers more reps first, th
 slower lowering, then a pause, exactly as the programme's ladder says. There is
 always a "not yet", and only one exercise is ever moved at a time.
 
-### Not built yet
+### Progress
 
-- **Progress screens and the weekly check-in** — Phase 4.
-- **Backup/export, exercise illustrations, the week 12 retest** — Phase 4.
+**"Progress"** on the front screen leads with what she can lift now that she
+could not lift before — because that is what actually moves in the early weeks,
+and the programme is blunt that the scale can go *up* for the first three weeks
+while everything is going right.
+
+The weight and waist log is **off unless she turns it on**. When it is on, the
+app only ever shows a **weekly average**, and refuses to average a week with
+only one reading — because a single morning's weight is close to meaningless,
+which the programme says in as many words. There is no goal weight, no
+projection and no daily chart.
+
+### Week 12
+
+The last session of week 12 becomes a retest: three lifts worked up to the
+heaviest clean set of 8, with her week 1 numbers alongside — and a plain note
+that week 1 was meant to feel easy, so the comparison flatters her slightly.
+
+### Backup
+
+**Your kit → Save a backup file.** There is no cloud, so this is the only way
+data moves between devices or survives a cleared browser. Worth doing every few
+weeks. The file goes wherever you save it and nowhere else.
+
+### Deliberately not built
+
+Streaks, badges, calories burned, body-fat estimates, weight projections,
+before/after photo comparison, and nagging notifications. Every one of them
+would push toward the pressure the programme's own tone avoids. Reasons are in
+`DECISIONS.md`.
+
+Exercise illustrations were planned and dropped — a vague drawing of a hinge is
+worse than the sentence describing it. The written cue and common mistake are
+always there offline; the video search link needs a connection. If you want
+visuals, photographs or a clip of someone actually doing the movement is the
+right answer.
 
 ### Checking it still works
 
@@ -165,14 +198,16 @@ always a "not yet", and only one exercise is ever moved at a time.
 npm test
 ```
 
-207 automated checks on the parts where a mistake would be invisible: that every
+234 automated checks on the parts where a mistake would be invisible: that every
 week has the right number of sets and the right rest, that week 7 is a genuine
 deload, that the bike plan matches each block and each day, that the app never
 suggests a dumbbell you do not own, that every kit combination produces a
 complete session rather than gaps, that the progression rule fires exactly when
 the programme says and never during the easy week, that it never tells you to
 pick up a heavier dumbbell for a press-up, and that every piece of jargon on
-screen has a definition behind it.
+screen has a definition behind it, that the week 12 retest contains the right
+lifts, that a backup survives a round trip, and that a single weigh-in is never
+displayed as a weekly average.
 
 These also run automatically on GitHub before anything is published, so a broken
 version cannot reach the phone.

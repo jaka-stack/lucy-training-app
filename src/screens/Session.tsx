@@ -6,9 +6,11 @@ import {
   EFFORTS,
   buildSession,
   countSets,
+  isRetestSession,
   setsCompletedBefore,
   type Effort,
   type PlannedSet,
+  type Step,
 } from '../state/engine';
 import { Term } from '../components/Term';
 import { Sheet } from '../components/Sheet';
@@ -131,6 +133,31 @@ export function Session({ onExit }: { onExit: () => void }) {
           hasBike={equipment.hasBike}
           cues={cues}
           onNext={() => go(1)}
+        />
+      )}
+
+      {step.kind === 'retestIntro' && <RetestIntro onNext={() => go(1)} />}
+
+      {step.kind === 'retest' && (
+        <RetestStep
+          key={step.exerciseId}
+          step={step}
+          owned={equipment.dumbbells}
+          onLog={(reps, weight) => {
+            dispatch({
+              type: 'logSet',
+              set: {
+                exerciseId: step.exerciseId,
+                slot: 'RETEST',
+                setNumber: 1,
+                reps,
+                weight,
+                rpe: 9,
+                effortLabel: 'Retest',
+              },
+            });
+            go(1);
+          }}
         />
       )}
 
@@ -804,6 +831,165 @@ function IntervalPlayer({
   );
 }
 
+/* --- the week 12 retest --------------------------------------------------- */
+
+function RetestIntro({ onNext }: { onNext: () => void }) {
+  return (
+    <>
+      <div className="body body-centre">
+        <p className="label">Week 12 · last session</p>
+        <h1 className="h1 step-title">Today you find out.</h1>
+
+        <div className="prose step-lead">
+          <p>
+            Three lifts. For each one, work up in a few steps to the heaviest
+            set of 8 you can do with clean form — then log it.
+          </p>
+          <p>
+            Clean form is the whole test. A heavier number with a rounded back
+            or a bounce does not count, and you already know what good looks
+            like.
+          </p>
+          <p>
+            Then the usual arm work to finish, and that is twelve weeks done.
+          </p>
+        </div>
+      </div>
+
+      <div className="footer">
+        <button className="btn-primary" onClick={onNext}>
+          Start with the goblet squat
+        </button>
+      </div>
+    </>
+  );
+}
+
+function RetestStep({
+  step,
+  owned,
+  onLog,
+}: {
+  step: Extract<Step, { kind: 'retest' }>;
+  owned: number[];
+  onLog: (reps: number, weight: number | null) => void;
+}) {
+  const [reps, setReps] = useState(8);
+  const [weight, setWeight] = useState<number | null>(step.startWeight);
+  const [showForm, setShowForm] = useState(false);
+  const lockedRef = useRef(false);
+  const isPair = step.weightStyle === 'pair';
+
+  function commit() {
+    if (lockedRef.current) return;
+    lockedRef.current = true;
+    onLog(reps, weight);
+  }
+
+  return (
+    <>
+      <main className="logger">
+        <div className="ex-head">
+          <p className="ex-slot">
+            <span className="ex-slot-letter">TEST</span>
+            Heaviest clean set of 8
+          </p>
+
+          <button className="ex-name" onClick={() => setShowForm(true)}>
+            {step.exercise.name}
+            <span className="ex-name-hint">How to do it</span>
+          </button>
+
+          {/* The honest comparison. Week 1 was a submaximal working set at an
+              easy effort, and today is a near-limit set — so the app shows
+              both with their context rather than computing a percentage that
+              would overstate the gain. */}
+          {step.weekOne ? (
+            <p className="retest-then">
+              Back at the start:{' '}
+              <strong>
+                {step.weekOne.weight !== null
+                  ? `${step.weekOne.weight} kg × ${step.weekOne.reps}`
+                  : `${step.weekOne.reps} reps`}
+              </strong>{' '}
+              — and that was meant to feel easy.
+            </p>
+          ) : (
+            <p className="ex-last">No earlier record of this one to compare.</p>
+          )}
+        </div>
+
+        <p className="retest-hint">
+          Build up in two or three steps rather than jumping straight to your
+          heaviest. Log the best clean set you managed.
+        </p>
+      </main>
+
+      <section className="console">
+        <section className="stepper">
+          <button
+            className="step-btn"
+            onClick={() => setReps((r) => Math.max(1, r - 1))}
+            aria-label="One fewer rep"
+          >
+            <Minus />
+          </button>
+          <div className="step-value">
+            <span className="step-number">{reps}</span>
+            <span className="label step-unit">reps</span>
+          </div>
+          <button
+            className="step-btn"
+            onClick={() => setReps((r) => Math.min(30, r + 1))}
+            aria-label="One more rep"
+          >
+            <Plus />
+          </button>
+        </section>
+
+        {step.weightStyle !== 'none' && (
+          <section className="weights">
+            <p className="label weights-label">
+              {isPair ? 'One in each hand' : 'One dumbbell'}
+            </p>
+            <div className="chips" role="group" aria-label="Dumbbell weight">
+              {owned.map((kg) => (
+                <button
+                  key={kg}
+                  className={`chip ${weight === kg ? 'is-on' : ''}`}
+                  onClick={() => setWeight(kg)}
+                  aria-pressed={weight === kg}
+                  aria-label={`${kg} kilogram${isPair ? ' in each hand' : ''}`}
+                >
+                  {kg}
+                  <span className="chip-unit">kg</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <button className="btn-primary" onClick={commit}>
+          Log it and move on
+        </button>
+      </section>
+
+      <Sheet
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        kicker="How to do it"
+        title={step.exercise.name}
+      >
+        <p className="lead">{step.exercise.cue}</p>
+        <div className="block">
+          <span className="label">The usual mistake</span>
+          <p>{step.exercise.mistake}</p>
+        </div>
+      </Sheet>
+    </>
+  );
+}
+
 /* --- cool-down ------------------------------------------------------------ */
 
 function CoolDownStep({
@@ -879,6 +1065,7 @@ function SummaryStep({
 }) {
   const plan = planForWeek(week);
   const day = dayById(dayId);
+  const isRetest = isRetestSession(dayId, week);
 
   useEffect(() => {
     cueDone(cues);
@@ -897,15 +1084,23 @@ function SummaryStep({
   return (
     <>
       <div className="body">
-        <p className="label">Week {week} · done</p>
+        <p className="label">
+          {isRetest ? 'Twelve weeks · done' : `Week ${week} · done`}
+        </p>
         <h1 className="h1 step-title">
-          {plan.isDeload ? 'Easy week, done properly.' : "That's the session."}
+          {isRetest
+            ? "That's twelve weeks."
+            : plan.isDeload
+              ? 'Easy week, done properly.'
+              : "That's the session."}
         </h1>
 
         <p className="prose step-lead">
-          {plan.isDeload
-            ? 'That was meant to feel too easy. You have done exactly what the week asked for.'
-            : `${sets.length} sets, ${totalReps} reps.`}
+          {isRetest
+            ? 'You started this not knowing what a hinge was. Whatever the numbers say, you trained three times a week for twelve weeks — that was the hard part, and most people do not do it.'
+            : plan.isDeload
+              ? 'That was meant to feel too easy. You have done exactly what the week asked for.'
+              : `${sets.length} sets, ${totalReps} reps.`}
         </p>
 
         <div className="summary-list">
@@ -929,8 +1124,9 @@ function SummaryStep({
         </div>
 
         <p className="prose summary-note">
-          Nothing here is a score. The only thing that matters is that it is
-          written down, so next week the app knows what to put in front of you.
+          {isRetest
+            ? 'Your numbers from the start are on the Progress screen, next to these. That comparison is the real report card — not the scale.'
+            : 'Nothing here is a score. The only thing that matters is that it is written down, so next week the app knows what to put in front of you.'}
         </p>
       </div>
 

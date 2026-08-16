@@ -34,6 +34,7 @@ type Action =
       newWeight?: number;
     }
   | { type: 'declineProgression'; exerciseId: string }
+  | { type: 'addCheckIn'; weightKg?: number; waistCm?: number }
   | { type: 'replaceAll'; state: AppState };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -205,6 +206,20 @@ function reducer(state: AppState, action: Action): AppState {
         },
       };
     }
+
+    case 'addCheckIn':
+      return {
+        ...state,
+        checkIns: [
+          ...state.checkIns,
+          {
+            date: new Date().toISOString().slice(0, 10),
+            week: state.currentWeek,
+            weightKg: action.weightKg,
+            waistCm: action.waistCm,
+          },
+        ],
+      };
 
     case 'replaceAll':
       return action.state;
