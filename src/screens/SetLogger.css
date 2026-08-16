@@ -1,0 +1,600 @@
+/* ==========================================================================
+   The session screen. Laid out for a phone on the floor, viewed from
+   standing, with one thumb available.
+   ========================================================================== */
+
+.screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+
+  /* Keep clear of the notch and the home indicator. */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+
+  max-width: 520px; /* on a tablet or desktop, stay phone-shaped */
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* --- header ------------------------------------------------------------- */
+
+.hdr {
+  padding: var(--s4) var(--s5) 0;
+  flex-shrink: 0;
+}
+
+.hdr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+}
+
+.hdr-pause {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--chalk-dim);
+  padding: var(--s2) var(--s3);
+  margin: calc(var(--s2) * -1) calc(var(--s3) * -1);
+  min-height: 44px;
+}
+
+/* Six segments — three sets of two exercises. A progress bar that means
+   something specific, rather than a percentage of nothing. */
+.hdr-track {
+  display: flex;
+  gap: 3px;
+  margin-top: var(--s3);
+}
+
+.hdr-seg {
+  flex: 1;
+  height: 3px;
+  background: var(--line);
+  transition: background var(--med) var(--ease);
+}
+
+.hdr-seg.is-done {
+  background: var(--done);
+}
+
+/* --- the exercise ------------------------------------------------------- */
+
+.logger {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* Centred on a tall phone so it isn't top-heavy. "safe" matters: plain
+     centring clips the TOP of content that overflows, putting it out of
+     reach. safe centring falls back to top-aligned when space runs out. */
+  justify-content: center;
+  justify-content: safe center;
+  padding: var(--s3) var(--s5);
+  gap: var(--s3);
+
+  /* Only this region scrolls, and only on very short screens. The effort
+     buttons live outside it and never move. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0; /* lets the flex child actually shrink instead of overflowing */
+}
+
+.ex-head {
+  flex-shrink: 0;
+}
+
+.ex-slot {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  font-size: var(--t-sm);
+  color: var(--chalk-dim);
+  margin-bottom: var(--s2);
+}
+
+/* The A1 / A2 badge. Ember-washed because it tells her where she is in the
+   pair, which is the thing people lose track of in a superset. */
+.ex-slot-letter {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--t-sm);
+  letter-spacing: 0.06em;
+  color: var(--ember);
+  background: var(--ember-wash);
+  border: 1px solid var(--ember-quiet);
+  border-radius: var(--r);
+  padding: 3px var(--s2);
+}
+
+/* The exercise name is also the way to the form cues. Making the biggest,
+   most obvious thing on the screen the route to help means she never has to
+   hunt for it mid-set. */
+.ex-name {
+  display: block;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: var(--t-xl);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--chalk);
+  width: 100%;
+}
+
+.ex-name-hint {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+  margin-top: var(--s1);
+
+  /* Underlined dotted, matching the app's one signal for "more here". */
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--ember);
+  text-underline-offset: 4px;
+}
+
+.ex-name:active {
+  color: var(--ember);
+}
+
+.ex-target {
+  font-size: var(--t-md);
+  color: var(--chalk-dim);
+  margin-top: var(--s3);
+}
+
+.ex-last {
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+  margin-top: var(--s1);
+}
+
+/* --- set pips ----------------------------------------------------------- */
+
+.pips {
+  display: flex;
+  gap: var(--s2);
+  list-style: none;
+  flex-shrink: 0;
+}
+
+.pip {
+  flex: 1;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  padding: 6px var(--s1);
+  text-align: center;
+  background: var(--ground-raised);
+}
+
+.pip-n {
+  display: block;
+  font-size: var(--t-label);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--chalk-faint);
+}
+
+.pip-v {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  color: var(--chalk-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.pip.is-done .pip-v {
+  color: var(--done);
+}
+
+/* The live set is the only ember thing in this row. */
+.pip.is-now {
+  border-color: var(--ember);
+  background: var(--ember-wash);
+}
+
+.pip.is-now .pip-n,
+.pip.is-now .pip-v {
+  color: var(--ember);
+}
+
+/* --- rep stepper -------------------------------------------------------- */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-shrink: 0;
+}
+
+.step-btn {
+  /* Still well above the 60px minimum; trimmed from 84 so the rep number can
+     stay as large as it is. */
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ground-well);
+  display: grid;
+  place-items: center;
+  transition: background var(--fast) var(--ease);
+}
+
+.step-btn:active {
+  background: var(--ground-press);
+}
+
+.icon {
+  width: 34px;
+  height: 34px;
+  stroke: var(--chalk);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.step-value {
+  text-align: center;
+  flex: 1;
+}
+
+/* The biggest thing on the screen, by a distance. This is the number she is
+   checking from 1.5 metres away while holding a dumbbell. */
+.step-number {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-hero);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 84;
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums; /* stops the layout jumping 9 → 10 */
+  color: var(--chalk);
+}
+
+.step-unit {
+  display: block;
+  margin-top: var(--s2);
+}
+
+/* A set landing: one firm pulse, then done. Not a celebration — she has two
+   more sets to do and this will happen 400 times. */
+.stepper.is-landed .step-number {
+  animation: land var(--med) var(--ease);
+}
+
+@keyframes land {
+  40% {
+    transform: scale(0.94);
+    color: var(--ember);
+  }
+}
+
+/* --- weight chips ------------------------------------------------------- */
+
+.weights {
+  flex-shrink: 0;
+}
+
+.weights-label {
+  margin-bottom: var(--s2);
+}
+
+.chips {
+  display: flex;
+  gap: var(--s2);
+}
+
+/* Only the dumbbells she told us she owns are ever rendered. There is no
+   free-text weight field anywhere in the app, which is what keeps the
+   keyboard shut. */
+.chip {
+  flex: 1;
+  min-height: var(--touch-min);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ground-well);
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  color: var(--chalk-dim);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background var(--fast) var(--ease),
+    color var(--fast) var(--ease);
+}
+
+.chip-unit {
+  font-family: var(--font-body);
+  font-size: var(--t-label);
+  font-weight: 600;
+  margin-left: 2px;
+  opacity: 0.65;
+}
+
+.chip.is-on {
+  background: var(--chalk);
+  border-color: var(--chalk);
+  color: var(--ground);
+}
+
+.bodyweight {
+  font-size: var(--t-md);
+  color: var(--chalk-dim);
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--s4);
+  border: 1px dashed var(--line);
+  border-radius: var(--r);
+}
+
+/* --- effort, which is also the log button ------------------------------- */
+
+/* Pinned below the scrolling area — the action is in the same place on every
+   phone, every set, whatever else is on screen. */
+.effort {
+  flex-shrink: 0;
+  padding: var(--s3) var(--s5) var(--s4);
+  border-top: 1px solid var(--line-soft);
+  background: var(--ground);
+}
+
+/* The only ember label on the screen: this is the action. */
+.effort-label {
+  color: var(--ember);
+  margin-bottom: var(--s3);
+}
+
+.effort-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+}
+
+.effort-btn {
+  min-height: var(--touch-primary);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ground-raised);
+  padding: var(--s3);
+  text-align: left;
+  transition:
+    background var(--fast) var(--ease),
+    border-color var(--fast) var(--ease);
+}
+
+.effort-btn:active {
+  background: var(--ember);
+  border-color: var(--ember);
+}
+
+.effort-btn:active .effort-title,
+.effort-btn:active .effort-sub {
+  color: var(--on-ember);
+}
+
+.effort-title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+  color: var(--chalk);
+}
+
+.effort-sub {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+  margin-top: 1px;
+}
+
+.effort-foot {
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+  text-align: center;
+  margin-top: var(--s2);
+}
+
+/* --- rest --------------------------------------------------------------- */
+
+.rest {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s5);
+  gap: var(--s5);
+  text-align: center;
+}
+
+.rest-label {
+  color: var(--ember);
+}
+
+.ring-wrap {
+  position: relative;
+  width: min(74vw, 260px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg); /* start the drain at 12 o'clock */
+}
+
+.ring-track,
+.ring-fill {
+  fill: none;
+  stroke-width: 6;
+}
+
+.ring-track {
+  stroke: var(--line-soft);
+}
+
+/* The ring draining is the clearest example of motion that communicates:
+   the amount of ember left IS the amount of rest left. Linear, because a
+   timer that eases would be lying about the time. */
+.ring-fill {
+  stroke: var(--ember);
+  stroke-linecap: butt;
+  stroke-dasharray: 565.5; /* 2πr, r = 90 */
+  animation: drain linear forwards;
+}
+
+@keyframes drain {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 565.5;
+  }
+}
+
+.ring-time {
+  font-family: var(--font-display);
+  font-size: 68px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 84;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: var(--chalk);
+}
+
+.rest-next-name {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  margin-top: var(--s2);
+  color: var(--chalk);
+}
+
+.btn-primary {
+  width: 100%;
+  min-height: var(--touch-primary);
+  border-radius: var(--r);
+  background: var(--ember);
+  color: var(--on-ember);
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 90;
+}
+
+.btn-primary:active {
+  background: var(--ember-quiet);
+}
+
+.rest-logged {
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+}
+
+/* Undo is always available immediately after a set lands. It is the safety
+   net that lets the effort buttons commit in a single tap. */
+.undo {
+  margin-left: var(--s3);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--chalk);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: var(--s2);
+}
+
+.done-h {
+  font-family: var(--font-display);
+  font-size: var(--t-xl);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.done-sub {
+  color: var(--chalk-dim);
+}
+
+/* --- short phones ------------------------------------------------------- */
+
+/* On a small screen (iPhone SE and similar) something has to give, and the
+   order of sacrifice is deliberate:
+
+     never   — the effort buttons, the rep number, the weight chips
+     first   — spacing, then supporting text, then the size of the headings
+
+   The goal is that she never has to scroll to log a set, on any phone. */
+@media (max-height: 700px) {
+  :root {
+    --t-hero: 72px;
+  }
+
+  .logger {
+    gap: var(--s2);
+    padding: var(--s2) var(--s5);
+  }
+
+  /* "Last week" and the ALL-CAPS "how to do it" hint both go. The exercise
+     name keeps the dotted underline, so the way to the form cues is still
+     signposted — just more quietly. */
+  .ex-last,
+  .ex-name-hint {
+    display: none;
+  }
+
+  .ex-name {
+    font-size: var(--t-lg);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: var(--ember);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+  }
+
+  .ex-target {
+    font-size: var(--t-sm);
+    margin-top: var(--s2);
+  }
+
+  .step-btn {
+    width: 64px;
+    height: 64px;
+  }
+
+  .pip {
+    padding: 3px var(--s1);
+  }
+
+  .pip-v {
+    font-size: var(--t-sm);
+  }
+
+  /* The "tapping one logs the set" hint is a first-week teaching aid. On a
+     small screen the buttons themselves have to win. */
+  .effort-foot {
+    display: none;
+  }
+
+  .effort {
+    padding: var(--s2) var(--s5) var(--s3);
+  }
+}

@@ -1,0 +1,7 @@
+node_modules
+dist
+*.local
+.DS_Store
+
+# Build artefacts — regenerated every build, no reason to store them.
+tsconfig.tsbuildinfo

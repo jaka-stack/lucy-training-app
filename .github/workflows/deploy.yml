@@ -1,0 +1,59 @@
+# Builds the app and publishes it to GitHub Pages.
+#
+# This runs automatically on GitHub every time code is pushed to the main
+# branch. You do not need to run anything yourself — push, wait a couple of
+# minutes, and the live page updates.
+#
+# Nothing here touches training data. This only builds and publishes the app
+# itself; all training data lives on the phone and never leaves it.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Lets you re-run it by hand from the Actions tab if you ever need to.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# If you push twice quickly, finish the newer one and abandon the older.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # ci (rather than install) installs the exact versions in the lock file,
+      # so the build on GitHub matches the one on your machine.
+      - run: npm ci
+
+      - run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

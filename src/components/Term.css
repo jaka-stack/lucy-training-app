@@ -1,0 +1,22 @@
+/* A tappable jargon term. Reads as normal text, but the dotted underline
+   marks it as something that will explain itself. Consistent everywhere:
+   dotted underline always means "tap me for plain English". */
+
+.term {
+  display: inline;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+
+  /* Dotted, not solid — a solid underline reads as a hyperlink to somewhere
+     else, and this goes nowhere. It stays put and explains. */
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--ember);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+
+.term:active {
+  color: var(--ember);
+}

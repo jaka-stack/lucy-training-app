@@ -1,0 +1,125 @@
+.sheet-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.sheet-scrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(9, 7, 12, 0.72);
+  animation: scrim-in var(--med) var(--ease);
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.sheet {
+  position: relative;
+  background: var(--ground-raised);
+  border-top: 1px solid var(--line);
+  border-radius: var(--r) var(--r) 0 0;
+  padding: var(--s2) var(--s5) var(--s5);
+
+  /* Sit above the iPhone home indicator. */
+  padding-bottom: calc(var(--s5) + env(safe-area-inset-bottom));
+
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+
+  /* The sheet rising is the one piece of motion here, and it communicates
+     "this came from below and will go back". */
+  animation: sheet-up var(--med) var(--ease);
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.sheet-grip {
+  width: 44px;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+  margin: var(--s2) auto var(--s4);
+}
+
+.sheet-body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sheet-kicker {
+  color: var(--ember);
+  margin-bottom: var(--s2);
+}
+
+.sheet-title {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  margin-bottom: var(--s4);
+}
+
+.sheet-content {
+  color: var(--chalk-dim);
+  font-size: var(--t-md);
+  line-height: 1.5;
+}
+
+.sheet-content p + p {
+  margin-top: var(--s4);
+}
+
+/* The lead sentence of an explanation is chalk, the elaboration is dimmer.
+   She should be able to read one line and get back to the set. */
+.sheet-content .lead {
+  color: var(--chalk);
+}
+
+/* A labelled block inside a sheet, e.g. "THE COMMON MISTAKE". */
+.sheet-content .block {
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line-soft);
+}
+
+.sheet-content .block .label {
+  display: block;
+  margin-bottom: var(--s2);
+}
+
+.sheet-note {
+  margin-top: var(--s5);
+  font-size: var(--t-sm);
+  color: var(--chalk-faint);
+}
+
+.sheet-close {
+  margin-top: var(--s5);
+  min-height: var(--touch-min);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: var(--chalk);
+  font-weight: 600;
+  font-size: var(--t-md);
+  flex-shrink: 0;
+}
+
+.sheet-close:active {
+  background: var(--ground-press);
+}

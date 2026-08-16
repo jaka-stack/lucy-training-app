@@ -1,0 +1,39 @@
+/* ==========================================================================
+   FONTS
+
+   The two typefaces are bundled into the app as files, not fetched from
+   Google Fonts. Two reasons:
+     1. The app has to look right in aeroplane mode.
+     2. No request ever leaves the device, which is the whole privacy promise.
+
+   Both are Open Font Licence (see LICENSE-*.txt in this folder next door in
+   ../fonts/). Files came from the npm packages @fontsource-variable/archivo
+   and @fontsource-variable/public-sans — to update them, reinstall those
+   packages and copy the same filenames out of their files/ folder.
+
+   IMPORTANT — which Archivo file this is:
+   Fontsource ships several variable cuts of Archivo. The default one
+   (index.css) carries ONLY the weight axis. This app's display type uses the
+   WIDTH axis as well, so it must be the "wdth" file. Using the wrong one
+   fails silently: the text renders, just never condenses.
+
+   Only the latin subset is included. Adding Vietnamese and latin-ext cost
+   ~72 kB for characters this app never shows.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Archivo Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%; /* the width axis this app depends on */
+  font-display: swap;
+  src: url('../fonts/archivo-latin-wdth-normal.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Public Sans Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/public-sans-latin-wght-normal.woff2') format('woff2-variations');
+}

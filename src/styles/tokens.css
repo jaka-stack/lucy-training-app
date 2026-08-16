@@ -1,0 +1,100 @@
+/* ==========================================================================
+   CHALK ON SLATE — the design system for this app.
+   Every colour, size and shape used anywhere in the app is defined here.
+   If you want to change how the app looks, change it here and it changes
+   everywhere, consistently. Nothing else should invent its own values.
+   ========================================================================== */
+
+:root {
+  /* --- GROUND -------------------------------------------------------------
+     A warm near-black, not a blue-grey. Warm reads as "room", cool reads as
+     "software". Dark by default because the phone is on the floor in a lit
+     room and a white screen flares.                                          */
+  --ground: #17131a;
+  --ground-raised: #1f1a24; /* cards sitting on the ground */
+  --ground-well: #282130; /* inputs and things you press into */
+  --ground-press: #322a3a; /* the pressed state of a well */
+
+  /* --- LINES --------------------------------------------------------------
+     Hairlines, never shadows. Shadows imply soft floating objects; this app
+     is meant to feel like something scratched onto a hard surface.           */
+  --line: #3a3243;
+  --line-soft: #2b2533;
+
+  /* --- CHALK (text) -------------------------------------------------------
+     Warm off-white, like chalk dust, not pure #FFF which glares.             */
+  --chalk: #f4efe6;
+  --chalk-dim: #b3aab8; /* secondary text, labels */
+  --chalk-faint: #7b7286; /* disabled, hints, things not yet reached */
+
+  /* --- EMBER (the one accent) --------------------------------------------
+     RULE: ember means "this is the thing you do next", and nothing else.
+     Never decorative. Never for success, error, or branding. If everything
+     is ember, she can't find the action from across the room.                */
+  --ember: #ff6a2b;
+  --ember-quiet: #c04a17; /* ember at rest, e.g. a track behind a timer */
+  --ember-wash: rgba(255, 106, 43, 0.12); /* tinted backgrounds */
+  --on-ember: #17131a; /* text sitting on top of ember */
+
+  /* --- DONE ---------------------------------------------------------------
+     Completed work is chalk, never green. A finished set is a fact, not a
+     reward — the moment you colour it green you have invented a points
+     system, and this app deliberately has none.                              */
+  --done: #b3aab8;
+
+  /* --- TYPE ---------------------------------------------------------------
+     Two faces, doing two jobs.
+     Archivo   — display. Grotesque, heavy, tightenable. Used for numbers and
+                 exercise names. Reads as equipment, not wellness.
+     Public Sans — body. Humanist, tall x-height, open apertures. Chosen
+                 because it stays legible at 1.5 m in bad light.              */
+  --font-display: 'Archivo Variable', system-ui, sans-serif;
+  --font-body: 'Public Sans Variable', system-ui, sans-serif;
+
+  /* Type scale. Deliberately few sizes, deliberately large at the top.
+     --t-hero is the rep count: it is meant to be readable standing up.       */
+  --t-hero: 88px;
+  --t-xl: 40px;
+  --t-lg: 27px;
+  --t-md: 19px; /* body minimum — never smaller for anything she must read */
+  --t-sm: 15px;
+  --t-label: 13px; /* ALL-CAPS labels only, always with letter-spacing */
+
+  /* --- SHAPE --------------------------------------------------------------
+     One radius, used everywhere. Squared, not pill-shaped, not rounded-soft.
+     A consistent shape language is most of what makes an app feel designed.  */
+  --r: 4px;
+
+  /* --- SPACE --------------------------------------------------------------
+     A 4px grid. Every margin and padding is one of these.                    */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+
+  /* --- TOUCH --------------------------------------------------------------
+     Minimum target for anything tapped mid-set with a sweaty thumb. Apple
+     says 44px; that is a guideline for someone sitting still and looking.
+     She is standing, breathing hard, and holding a dumbbell.                 */
+  --touch-min: 60px;
+  --touch-primary: 76px; /* the main action on any screen */
+
+  /* --- MOTION -------------------------------------------------------------
+     Motion only where it communicates: a timer draining, a set landing.
+     Never decorative easing on things that simply appear.                    */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --fast: 120ms;
+  --med: 240ms;
+}
+
+/* Respect the phone's accessibility setting. Someone who has asked their
+   device for less motion has asked this app too. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fast: 0ms;
+    --med: 0ms;
+  }
+}
