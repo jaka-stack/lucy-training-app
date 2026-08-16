@@ -213,30 +213,44 @@ straight in — see below.**
 
 ---
 
-## Adding pictures to the exercises
+## Adding videos or photos to the exercises
 
-Put a picture in **`src/exercise-images/`**, named after the exercise, and it
+Put a file in **`src/exercise-images/`**, named after the exercise, and it
 appears at the top of that exercise's "How to do it" panel — the one that opens
 when you tap an exercise name mid-session. **No code editing.**
 
-1. Get a photo, or a short animation, of the movement.
+1. Get a short clip, or a photo, of the movement.
 2. Rename it to match the exercise exactly, all lower case with the dashes:
-   `goblet-squat.jpg`
+   `goblet-squat.mp4`
 3. Drop it in `src/exercise-images/`
 4. `git push`. Live a minute later.
 
-`.jpg`, `.jpeg`, `.png`, `.webp` and `.gif` all work. **An animated `.gif` is
-often better than a still**, because these are movements rather than positions
-— two or three seconds showing a whole rep.
+**A short video is the best option.** These are movements rather than
+positions, and a clip shows the whole rep. It plays automatically, silently, on
+a loop — it behaves like an animation rather than a video to be operated.
+
+| Type | Extensions | Aim for |
+|---|---|---|
+| Video (best) | `.mp4`, `.webm` | 2–5 seconds, under ~1 MB |
+| Photo | `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif` | under ~300 KB |
+
+**Use `.mp4`.** iPhones record `.mov`, which many Android browsers refuse to
+play — convert those first. If you add both a video and a photo for the same
+exercise, the video is used and the photo becomes its holding image.
 
 **The full list of filenames is in `src/exercise-images/README.txt`**, grouped
 by training day. There are 19. You do not have to do all of them — any exercise
-without a picture just shows the written cue as it does now, and nothing looks
+without a file just shows the written cue as it does now, and nothing looks
 broken or unfinished.
 
-**Keep them under about 300 KB each.** They get downloaded onto the phone so
-they work with no internet, and a 5 MB photo straight off a camera makes the
-app slow to install without looking any better on a phone screen.
+**Size matters** because these are downloaded onto the phone so they work with
+no internet. Nineteen clips at 1 MB is about 19 MB, which is fine; nineteen
+straight off a phone camera could be 400 MB, which would make the app take an
+age to install. Trimming to a few seconds and dropping to 720p is plenty for a
+phone screen.
+
+Someone who has asked their phone for reduced motion gets the clip paused with
+play controls rather than an automatic loop.
 
 **Don't use pictures taken from someone else's website or app.** Either shoot
 them yourself or use a source that clearly allows reuse — linking to a YouTube

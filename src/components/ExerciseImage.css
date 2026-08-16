@@ -2,6 +2,8 @@
    its own height, on a slightly raised ground so a photo with a pale
    background does not bleed into the sheet. */
 
+/* Used by both the still and the clip, so a sheet does not jump around
+   depending on which kind of file an exercise has. */
 .ex-image {
   display: block;
   width: 100%;
