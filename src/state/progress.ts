@@ -118,6 +118,31 @@ export function daysDoneInWeek(history: SessionRecord[], week: number) {
   return DAYS.map((d) => ({ day: d, done: done.has(d.id) }));
 }
 
+/** The day ids completed in a given week. */
+export function doneDayIds(
+  history: SessionRecord[],
+  week: number,
+): Set<string> {
+  return new Set(history.filter((h) => h.week === week).map((h) => h.dayId));
+}
+
+/** A week counts as finished once all three sessions are logged in it. */
+export function isWeekComplete(
+  history: SessionRecord[],
+  week: number,
+): boolean {
+  return doneDayIds(history, week).size >= DAYS.length;
+}
+
+/** Every week that has all three sessions logged. */
+export function completedWeeks(history: SessionRecord[]): Set<number> {
+  const weeks = new Set<number>();
+  for (let w = 1; w <= 12; w++) {
+    if (isWeekComplete(history, w)) weeks.add(w);
+  }
+  return weeks;
+}
+
 /**
  * How long since she last trained. Used for a plain, un-judgemental line —
  * never a warning, never a broken streak.

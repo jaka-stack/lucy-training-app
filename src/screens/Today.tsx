@@ -3,6 +3,7 @@ import { useStore } from '../state/store';
 import { DAYS, blockIntro, dayById, planForWeek } from '../data/programme';
 import { resolveExercise } from '../data/exercises';
 import { benchKind } from '../state/engine';
+import { completedWeeks } from '../state/progress';
 import { progressionOffers } from '../state/progression';
 import { Term } from '../components/Term';
 import { Sheet } from '../components/Sheet';
@@ -49,6 +50,16 @@ export function Today({
     [state.history, week],
   );
 
+  const weekComplete = doneThisWeek.size === DAYS.length;
+  const completed = useMemo(
+    () => completedWeeks(state.history),
+    [state.history],
+  );
+
+  // Once every session in the week is logged, the next thing is week N+1 —
+  // not Day 1 again. Before that, suggest the first day not yet done.
+  const nextWeek = week < 12 ? week + 1 : null;
+  const allTwelveDone = completed.size === 12;
   const suggested =
     DAYS.find((d) => !doneThisWeek.has(d.id))?.id ?? DAYS[0].id;
 
@@ -86,7 +97,15 @@ export function Today({
     onStart();
   }
 
-  const weekComplete = doneThisWeek.size === DAYS.length;
+  /** Move to the next week and start its first session. */
+  function startNextWeek() {
+    if (nextWeek === null) return;
+    primeAudio();
+    dispatch({ type: 'setWeek', week: nextWeek });
+    setChosenDay(null);
+    dispatch({ type: 'startSession', dayId: DAYS[0].id, week: nextWeek });
+    onStart();
+  }
 
   return (
     <div className="screen">
@@ -196,23 +215,67 @@ export function Today({
           </p>
         </div>
 
+        {/* Where you are this week, at a glance. */}
+        <div className="daytrack" aria-label={`${doneThisWeek.size} of ${DAYS.length} sessions done this week`}>
+          {DAYS.map((d) => {
+            const isDone = doneThisWeek.has(d.id);
+            const isNow = !isDone && d.id === dayId;
+            return (
+              <div
+                key={d.id}
+                className={`daytrack-cell ${isDone ? 'is-done' : ''} ${isNow ? 'is-now' : ''}`}
+              >
+                <span className="daytrack-mark" aria-hidden="true">
+                  {isDone ? <Tick /> : d.number}
+                </span>
+                <span className="daytrack-label">
+                  {isDone ? 'done' : isNow ? 'next' : `day ${d.number}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
         {weekComplete && !resumable && (
           <p className="today-done">
-            All three sessions done this week. Nothing owed — start next week
-            whenever you are ready.
-          </p>
-        )}
-        {!weekComplete && doneThisWeek.size > 0 && (
-          <p className="today-done">
-            {doneThisWeek.size} of {DAYS.length} done this week.
+            {nextWeek === null
+              ? 'Twelve weeks, finished. Nothing owed and nothing outstanding.'
+              : 'All three sessions logged. Nothing owed — move on whenever you are ready.'}
           </p>
         )}
       </div>
 
       <div className="footer">
-        <button className="btn-primary" onClick={start}>
-          {resumable ? 'Carry on where you left off' : 'Start the session'}
-        </button>
+        {/* A finished week must not leave her staring at "Start the session"
+            for a session she has already done. The next thing becomes the
+            next week — one tap, but still her decision, because repeating a
+            week is a legitimate choice the programme explicitly allows. */}
+        {allTwelveDone && !resumable ? (
+          /* The end of the programme. The payoff is the comparison, not
+             another session — so that is what the button does. */
+          <>
+            <button className="btn-primary" onClick={onProgress}>
+              See what changed
+            </button>
+            <button className="btn-text" onClick={start}>
+              Or train again — the programme says this is probably the first of
+              several blocks
+            </button>
+          </>
+        ) : weekComplete && !resumable && nextWeek !== null ? (
+          <>
+            <button className="btn-primary" onClick={startNextWeek}>
+              Start week {nextWeek}
+            </button>
+            <button className="btn-text" onClick={start}>
+              Or do a week {week} session again
+            </button>
+          </>
+        ) : (
+          <button className="btn-primary" onClick={start}>
+            {resumable ? 'Carry on where you left off' : 'Start the session'}
+          </button>
+        )}
 
         {resumable && (
           <button
@@ -247,22 +310,27 @@ export function Today({
         </p>
 
         <div className="day-list">
-          {DAYS.map((d) => (
-            <button
-              key={d.id}
-              className={`day-row ${d.id === dayId ? 'is-on' : ''}`}
-              onClick={() => {
-                setChosenDay(d.id);
-                setShowDays(false);
-              }}
-            >
-              <span className="day-row-n">Day {d.number}</span>
-              <span className="day-row-name">{d.title}</span>
-              <span className="day-row-state">
-                {doneThisWeek.has(d.id) ? 'done this week' : ''}
-              </span>
-            </button>
-          ))}
+          {DAYS.map((d) => {
+            const isDone = doneThisWeek.has(d.id);
+            return (
+              <button
+                key={d.id}
+                className={`day-row ${d.id === dayId ? 'is-on' : ''} ${isDone ? 'is-done' : ''}`}
+                onClick={() => {
+                  setChosenDay(d.id);
+                  setShowDays(false);
+                }}
+              >
+                <span className="day-row-n">Day {d.number}</span>
+                <span className="day-row-name">{d.title}</span>
+                {isDone && (
+                  <span className="day-row-state">
+                    <Tick /> done this week
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </Sheet>
 
@@ -283,12 +351,14 @@ export function Today({
         <div className="week-grid">
           {Array.from({ length: 12 }, (_, i) => i + 1).map((w) => {
             const p = planForWeek(w);
+            const isDone = completed.has(w);
             return (
               <button
                 key={w}
                 className={`week-cell ${w === week ? 'is-on' : ''} ${
                   p.isDeload ? 'is-deload' : ''
-                }`}
+                } ${isDone ? 'is-done' : ''}`}
+                aria-label={`Week ${w}${isDone ? ', all three sessions done' : ''}`}
                 onClick={() => {
                   dispatch({ type: 'setWeek', week: w });
                   setShowWeeks(false);
@@ -296,7 +366,15 @@ export function Today({
               >
                 <span className="week-cell-n">{w}</span>
                 <span className="week-cell-b">
-                  {p.isDeload ? 'easy' : p.isRetestWeek ? 'last' : `b${p.block}`}
+                  {isDone ? (
+                    <Tick />
+                  ) : p.isDeload ? (
+                    'easy'
+                  ) : p.isRetestWeek ? (
+                    'last'
+                  ) : (
+                    `b${p.block}`
+                  )}
                 </span>
               </button>
             );
@@ -345,5 +423,15 @@ export function Today({
         </Sheet>
       )}
     </div>
+  );
+}
+
+/* A tick, drawn rather than an emoji so it inherits colour and matches the
+   stroke weight of the rest of the interface. */
+function Tick() {
+  return (
+    <svg className="tick" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 13l4.5 4.5L19 7" />
+    </svg>
   );
 }

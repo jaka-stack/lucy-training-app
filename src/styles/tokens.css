@@ -37,10 +37,20 @@
   --on-ember: #17131a; /* text sitting on top of ember */
 
   /* --- DONE ---------------------------------------------------------------
-     Completed work is chalk, never green. A finished set is a fact, not a
-     reward — the moment you colour it green you have invented a points
-     system, and this app deliberately has none.                              */
+     Inside a session, completed work is chalk, never green. A finished set is
+     a fact, not a reward — the moment you colour it green you have invented a
+     points system, and this app deliberately has none.                       */
   --done: #b3aab8;
+
+  /* The ONE exception, and it is a navigational one rather than a reward.
+     At the calendar level — which days this week, which weeks of the twelve —
+     "finished" needs to be readable at a glance across a grid, and a tick in
+     grey reads as "disabled" rather than "done". This green is deliberately
+     desaturated so it never competes with ember, which still means "the thing
+     you do next". It is used ONLY on week and day completion marks, never on
+     a set, a rep or an exercise.                                             */
+  --finished: #6fae7d;
+  --finished-wash: rgba(111, 174, 125, 0.12);
 
   /* --- TYPE ---------------------------------------------------------------
      Two faces, doing two jobs.

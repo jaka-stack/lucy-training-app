@@ -671,6 +671,40 @@ const squat = DAY_1.exercises.find((e) => e.exerciseId === 'goblet-squat')!;
   check('no history means no "days since"', daysSinceLastSession([]), null);
 }
 
+/* --- week and day completion --------------------------------------------- */
+
+{
+  const { isWeekComplete, completedWeeks, doneDayIds } = await import('./progress');
+
+  const mk = (week: number, dayId: string): SessionRecord => ({
+    id: dayId + week,
+    dayId,
+    week,
+    finishedAt: new Date().toISOString(),
+    bike: 'none',
+    sets: [
+      { exerciseId: 'goblet-squat', slot: 'A1', setNumber: 1, reps: 10, weight: 15, rpe: 6, effortLabel: 'Moderate' },
+    ],
+  });
+
+  const partial = [mk(1, 'day1'), mk(1, 'day2')];
+  ok('two of three days is not a finished week', !isWeekComplete(partial, 1));
+  check('and it knows which two', doneDayIds(partial, 1).size, 2);
+
+  const full = [...partial, mk(1, 'day3')];
+  ok('all three days finishes the week', isWeekComplete(full, 1));
+
+  // The same day logged twice does not finish a week on its own.
+  const repeated = [mk(2, 'day1'), mk(2, 'day1'), mk(2, 'day1')];
+  ok('the same session three times is not a finished week',
+    !isWeekComplete(repeated, 2));
+
+  const mixed = [...full, mk(2, 'day1'), mk(2, 'day2'), mk(2, 'day3'), mk(3, 'day1')];
+  check('completed weeks are counted across the programme',
+    [...completedWeeks(mixed)].sort((a, b) => a - b), [1, 2]);
+  check('no history means no completed weeks', completedWeeks([]).size, 0);
+}
+
 /* --- every jargon term on screen has a definition ------------------------ */
 
 /* The requirement is that any term a beginner would not know explains itself

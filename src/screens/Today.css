@@ -211,6 +211,74 @@
   text-align: center;
 }
 
+/* --- this week's three sessions ----------------------------------------- */
+
+.tick {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.12em;
+}
+
+.daytrack {
+  display: flex;
+  gap: var(--s2);
+}
+
+.daytrack-cell {
+  flex: 1;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  background: var(--ground-raised);
+  padding: var(--s3) var(--s2);
+  text-align: center;
+}
+
+.daytrack-mark {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--chalk-faint);
+}
+
+.daytrack-label {
+  display: block;
+  margin-top: var(--s2);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
+/* Finished: green, and only here at the calendar level. */
+.daytrack-cell.is-done {
+  border-color: var(--finished);
+  background: var(--finished-wash);
+}
+
+.daytrack-cell.is-done .daytrack-mark,
+.daytrack-cell.is-done .daytrack-label {
+  color: var(--finished);
+}
+
+/* The one still to do keeps the ember "next" meaning. */
+.daytrack-cell.is-now {
+  border-color: var(--ember);
+  background: var(--ember-wash);
+}
+
+.daytrack-cell.is-now .daytrack-mark,
+.daytrack-cell.is-now .daytrack-label {
+  color: var(--ember);
+}
+
 .today-card-top {
   display: flex;
   align-items: center;
@@ -276,7 +344,14 @@
 .day-row-state {
   grid-column: 2;
   font-size: var(--t-sm);
-  color: var(--chalk-faint);
+  color: var(--finished);
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.day-row.is-done .day-row-n {
+  color: var(--finished);
 }
 
 /* --- week picker -------------------------------------------------------- */
@@ -317,12 +392,28 @@
   color: var(--ember);
 }
 
-.week-cell.is-on {
+/* A finished week: all three sessions logged. */
+.week-cell.is-done {
+  border-color: var(--finished);
+  background: var(--finished-wash);
+}
+
+.week-cell.is-done .week-cell-n,
+.week-cell.is-done .week-cell-b {
+  color: var(--finished);
+}
+
+/* The week she is on wins over the finished styling, so "where am I" is
+   always the loudest thing in the grid. */
+.week-cell.is-on,
+.week-cell.is-on.is-done {
   background: var(--chalk);
   border-color: var(--chalk);
 }
 
 .week-cell.is-on .week-cell-n,
-.week-cell.is-on .week-cell-b {
+.week-cell.is-on .week-cell-b,
+.week-cell.is-on.is-done .week-cell-n,
+.week-cell.is-on.is-done .week-cell-b {
   color: var(--ground);
 }

@@ -498,6 +498,62 @@ job.
 
 ---
 
+## Phase 4 — finishing a week, and showing what is finished
+
+Both from Jak's feedback after using it.
+
+### D40. A finished week is no longer a dead end
+
+**The bug:** after logging all three sessions of a week, the app suggested Day
+1 of the *same* week again and the button still read "Start the session". The
+week never advanced, so the obvious next step was to redo a session already
+done.
+
+**The fix:** when every session in the week is logged, the primary button
+becomes **"Start week N+1"**, which moves the week on and opens Day 1. A
+smaller "or do a week N session again" sits underneath.
+
+**Why one tap rather than fully automatic:** the app still does not advance the
+week by itself, and that is deliberate (see D20). The programme is explicit
+that repeating a week is a legitimate choice, that days move around, and that
+an extra deload costs nothing — so a week that rolls over on its own would
+quietly overrule her. What was wrong before was not that it asked, but that it
+offered nothing. Now the next week is the default action and takes one tap.
+
+If Jak would rather it advanced with no tap at all, it is a two-line change.
+
+### D41. Week 12 ends on the comparison, not another session
+
+With all twelve weeks logged, the primary action becomes **"See what changed"**
+and goes to Progress, because at that point the payoff is the week 1 against
+week 12 comparison, not a thirteenth week. Underneath, "or train again — the
+programme says this is probably the first of several blocks", which is the
+PDF's own line from the spot-reduction page.
+
+### D42. Green, introduced deliberately and confined to the calendar
+
+Jak asked for completed weeks to be marked, suggesting green ticks. This runs
+into D7, which says finished work is chalk and never green because colouring it
+green invents a reward system.
+
+**Both are right, about different things.** D7 is about a *set* inside a
+session — there, green would turn logging into scoring. A week or a day in a
+twelve-week grid is a different question: it is navigational. "Which weeks have
+I finished" needs to be answerable at a glance across twelve cells, and a grey
+tick reads as *disabled* rather than *done*.
+
+So a single desaturated green (`--finished`) is now in the palette, with a hard
+rule written into the tokens file: it appears **only** on week and day
+completion marks, never on a set, a rep or an exercise. It is deliberately
+muted so it never competes with ember, which still means "the thing you do
+next".
+
+Where it appears: the three day cells on the Today screen, the twelve-week
+grid, and the day picker. The current week still overrides the finished
+styling, so "where am I" stays the loudest thing in the grid.
+
+---
+
 ## Acceptance tests — final state
 
 All verified. The offline test was the last one outstanding and could not be
